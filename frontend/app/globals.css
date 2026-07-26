@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  color-scheme: dark;
+}
+
+/* Belt-and-suspenders: some browsers apply OS-level dark styling to native
+   form controls independent of color-scheme when no explicit color is set. */
+input,
+textarea,
+select {
+  color: #111827;
+}
+
+:root.dark input,
+:root.dark textarea,
+:root.dark select {
+  color: #f3f4f6;
+}
+
+/* Browser autofill (Chrome/Brave/Edge) ignores `color` and paints its own
+   -webkit-text-fill-color, which can render as near-invisible light text
+   regardless of theme. Force it to match our normal input text color. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #f9fafb inset !important;
+  box-shadow: 0 0 0px 1000px #f9fafb inset !important;
+  caret-color: #111827;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+:root.dark input:-webkit-autofill,
+:root.dark input:-webkit-autofill:hover,
+:root.dark input:-webkit-autofill:focus,
+:root.dark input:-webkit-autofill:active {
+  -webkit-text-fill-color: #f3f4f6 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1f1f1f inset !important;
+  box-shadow: 0 0 0px 1000px #1f1f1f inset !important;
+  caret-color: #f3f4f6;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}

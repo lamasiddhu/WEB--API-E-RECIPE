@@ -42,6 +42,7 @@ export default function RecipeDetailPage() {
   const tier = recipe ? getRecipeTier(recipe) : "free";
   const isProTier = tier === "pro";
   const isLocked = !!recipe && !canAccessRecipe(recipe, user);
+  const canBuyProTier = user?.role === "admin" || !!user?.isPro;
   const isFavorited = !!recipe && !!user?.favoriteRecipeIds?.includes(recipe._id);
 
   const handleAddToBasket = async () => {
@@ -135,7 +136,7 @@ export default function RecipeDetailPage() {
                 <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-[#B34B20] transition-colors">
                   <Share2 className="w-5 h-5" />
                 </button>
-                {!isProTier && (
+                {(!isProTier || canBuyProTier) && (
                   <button
                     onClick={handleAddToBasket}
                     disabled={isAddingToBasket || !recipe}

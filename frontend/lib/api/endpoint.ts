@@ -1,0 +1,63 @@
+// centralized path definitions for API endpoints
+export const API = {
+    AUTH: {
+        REGISTER: "/api/v1/auth/register",
+        LOGIN: "/api/v1/auth/login",
+        ME: "/api/v1/auth/me",
+        CHANGE_PASSWORD: "/api/v1/auth/me/password",
+        SET_NEW_PASSWORD: "/api/v1/auth/me/password/reset",
+        FAVORITES: (recipeId: string) => `/api/v1/auth/me/favorites/${recipeId}`,
+    },
+    ADMIN: {
+        USERS: {
+            GET_ALL: "/api/v1/admin/users",
+            GET_BY_ID: (id: string) => `/api/v1/admin/users/${id}`,
+            CREATE: "/api/v1/admin/users",
+            UPDATE: (id: string) => `/api/v1/admin/users/${id}`,
+            UPDATE_PASSWORD: (id: string) => `/api/v1/admin/users/${id}/password`,
+            REQUEST_PASSWORD_RESET: (id: string) => `/api/v1/admin/users/${id}/request-password-reset`,
+            DELETE: (id: string) => `/api/v1/admin/users/${id}`,
+        },
+        SETTINGS: {
+            GET: "/api/v1/admin/settings",
+            SET_MAINTENANCE_MODE: "/api/v1/admin/settings/maintenance-mode",
+            CLEAR_CACHE: "/api/v1/admin/settings/clear-cache",
+        },
+    },
+    RECIPES: {
+        GET_ALL: "/api/v1/recipes",
+        GET_BY_ID: (id: string) => `/api/v1/recipes/${id}`,
+        CREATE: "/api/v1/recipes",
+        UPDATE: (id: string) => `/api/v1/recipes/${id}`,
+        DELETE: (id: string) => `/api/v1/recipes/${id}`,
+    },
+    ORDERS: {
+        GET_ALL: "/api/v1/orders",
+        GET_MINE: "/api/v1/orders/me",
+        CREATE: "/api/v1/orders",
+        CANCEL: (id: string) => `/api/v1/orders/${id}/cancel`,
+        ACCEPT: (id: string) => `/api/v1/orders/${id}/accept`,
+        DELETE: (id: string) => `/api/v1/orders/${id}`,
+    },
+    FOOD_PROFILE: {
+        GET: "/api/v1/food-profile",
+        SAVE: "/api/v1/food-profile",
+    },
+    SHOPPING_LIST: {
+        GET_ALL: "/api/v1/shopping-list",
+        ADD: "/api/v1/shopping-list",
+        UPDATE: (id: string) => `/api/v1/shopping-list/${id}`,
+        DELETE: (id: string) => `/api/v1/shopping-list/${id}`,
+        CHECKOUT: "/api/v1/shopping-list/checkout",
+    },
+    UPLOAD: "/api/v1/upload",
+    NOTIFICATIONS: {
+        GET_ALL: "/api/v1/notifications",
+        PRO_REQUEST: "/api/v1/notifications/pro-request",
+        RESPOND: (id: string) => `/api/v1/notifications/${id}/respond`,
+        READ: (id: string) => `/api/v1/notifications/${id}/read`,
+        READ_ALL: "/api/v1/notifications/read-all",
+        CLEAR_ALL: "/api/v1/notifications/clear-all",
+        ANNOUNCE: "/api/v1/notifications/announce",
+    },
+};

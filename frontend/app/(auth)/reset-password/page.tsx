@@ -166,7 +166,20 @@ function ResetPasswordForm() {
             </ul>
           </div>
 
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          {error && (
+            <div className="text-center">
+              <p className="text-sm text-red-600">{error}</p>
+              {isCodeFlow && isAuthenticated && (
+                <p className="text-xs text-gray-500 mt-2">
+                  That link may have expired.{" "}
+                  <Link href="/reset-password" className="text-[#B34B20] font-semibold hover:underline">
+                    Reset your password from your account instead
+                  </Link>
+                  .
+                </p>
+              )}
+            </div>
+          )}
 
           <button
             type="submit"

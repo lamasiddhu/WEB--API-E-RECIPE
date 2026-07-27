@@ -1,11 +1,26 @@
 import { UserMongoRepository } from "../repositories/user.repository";
-import { CreateUserDTO, LoginUserDTO, UpdateMeDTO, ChangeMyPasswordDTO, SetNewPasswordDTO } from "../dtos/user.dto";
+import {
+    CreateUserDTO,
+    LoginUserDTO,
+    UpdateMeDTO,
+    ChangeMyPasswordDTO,
+    SetNewPasswordDTO,
+    RequestPasswordResetCodeDTO,
+    VerifyResetCodeDTO,
+    ResetPasswordWithCodeDTO,
+    GoogleLoginDTO,
+} from "../dtos/user.dto";
 import { IUser, INotificationPreferences } from "../models/user.model";
 import { HttpException } from "../exceptions/http-exception";
 import * as bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { SECRET_KEY } from "../configs/constant";
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
+import { SECRET_KEY, GOOGLE_CLIENT_ID } from "../configs/constant";
 import { AppSettingsService } from "./appSettings.service";
+import { sendPasswordResetCodeEmail } from "../utils/mailer.util";
+
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const userRepository = new UserMongoRepository();
 const appSettingsService = new AppSettingsService();
@@ -47,6 +62,47 @@ export class UserService {
             { expiresIn: "30d" }
         );
         
+        const { password, ...userWithoutPassword } = user.toObject();
+        return { user: userWithoutPassword, token };
+    }
+
+    async loginWithGoogle(data: GoogleLoginDTO) {
+        if (!GOOGLE_CLIENT_ID) {
+            throw new HttpException(500, "Google sign-in isn't configured on this server yet");
+        }
+
+        let payload;
+        try {
+            const ticket = await googleClient.verifyIdToken({ idToken: data.idToken, audience: GOOGLE_CLIENT_ID });
+            payload = ticket.getPayload();
+        } catch {
+            throw new HttpException(401, "Invalid Google sign-in token");
+        }
+        if (!payload?.email || !payload.email_verified) {
+            throw new HttpException(401, "Google account has no verified email");
+        }
+
+        let user = await userRepository.getUserByEmail(payload.email);
+        if (!user) {
+            const randomPassword = await bcryptjs.hash(crypto.randomUUID(), 10);
+            user = await userRepository.createUser({
+                fullName: payload.name || payload.email.split("@")[0],
+                email: payload.email,
+                password: randomPassword,
+                avatarUrl: payload.picture,
+            });
+        }
+
+        if (user.role !== "admin" && (await appSettingsService.isMaintenanceModeOn())) {
+            throw new HttpException(503, "The website is currently under maintenance. Please try again later.");
+        }
+
+        const token = jwt.sign(
+            { id: user._id, email: user.email, role: user.role },
+            SECRET_KEY,
+            { expiresIn: "30d" }
+        );
+
         const { password, ...userWithoutPassword } = user.toObject();
         return { user: userWithoutPassword, token };
     }
@@ -145,5 +201,50 @@ export class UserService {
 
         const hashedPassword = await bcryptjs.hash(data.newPassword, 10);
         await userRepository.update(id, { password: hashedPassword, passwordResetRequested: false });
+    }
+
+    async requestPasswordResetCode(data: RequestPasswordResetCodeDTO): Promise<void> {
+        const user = await userRepository.getUserByEmail(data.email);
+        // Don't reveal whether the email exists — respond the same way either way.
+        if (!user) return;
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const codeHash = await bcryptjs.hash(code, 10);
+        await userRepository.update(String(user._id), {
+            passwordResetCode: codeHash,
+            passwordResetCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        });
+
+        await sendPasswordResetCodeEmail(user.email, code);
+    }
+
+    private async validateResetCode(email: string, code: string): Promise<IUser> {
+        const user = await userRepository.getUserByEmail(email);
+        if (!user || !user.passwordResetCode || !user.passwordResetCodeExpiresAt) {
+            throw new HttpException(400, "Invalid or expired code");
+        }
+        if (user.passwordResetCodeExpiresAt.getTime() < Date.now()) {
+            throw new HttpException(400, "Invalid or expired code");
+        }
+        const isValid = await bcryptjs.compare(code, user.passwordResetCode);
+        if (!isValid) {
+            throw new HttpException(400, "Invalid or expired code");
+        }
+        return user;
+    }
+
+    async verifyResetCode(data: VerifyResetCodeDTO): Promise<void> {
+        await this.validateResetCode(data.email, data.code);
+    }
+
+    async resetPasswordWithCode(data: ResetPasswordWithCodeDTO): Promise<void> {
+        const user = await this.validateResetCode(data.email, data.code);
+        const hashedPassword = await bcryptjs.hash(data.newPassword, 10);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await userRepository.update(String(user._id), {
+            password: hashedPassword,
+            passwordResetCode: null,
+            passwordResetCodeExpiresAt: null,
+        } as any);
     }
 }

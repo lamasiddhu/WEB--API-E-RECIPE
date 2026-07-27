@@ -79,3 +79,28 @@ export const SetNewPasswordDTO = z.object({
     newPassword: z.string().min(8, "New password must be at least 8 characters long"),
 });
 export type SetNewPasswordDTO = z.infer<typeof SetNewPasswordDTO>;
+
+// Sign in (or auto-register) with a verified Google ID token from the frontend.
+export const GoogleLoginDTO = z.object({
+    idToken: z.string().min(1, "Google ID token is required"),
+});
+export type GoogleLoginDTO = z.infer<typeof GoogleLoginDTO>;
+
+// Public "forgot password" flow: request a 6-digit code emailed to the account.
+export const RequestPasswordResetCodeDTO = z.object({
+    email: z.string().email("Invalid email address"),
+});
+export type RequestPasswordResetCodeDTO = z.infer<typeof RequestPasswordResetCodeDTO>;
+
+export const VerifyResetCodeDTO = z.object({
+    email: z.string().email("Invalid email address"),
+    code: z.string().length(6, "Code must be 6 digits"),
+});
+export type VerifyResetCodeDTO = z.infer<typeof VerifyResetCodeDTO>;
+
+export const ResetPasswordWithCodeDTO = z.object({
+    email: z.string().email("Invalid email address"),
+    code: z.string().length(6, "Code must be 6 digits"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters long"),
+});
+export type ResetPasswordWithCodeDTO = z.infer<typeof ResetPasswordWithCodeDTO>;

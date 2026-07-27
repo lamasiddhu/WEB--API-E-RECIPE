@@ -1,6 +1,16 @@
 import { UserService } from "../services/user.service";
 import { z } from "zod";
-import { CreateUserDTO, LoginUserDTO, UpdateMeDTO, ChangeMyPasswordDTO, SetNewPasswordDTO } from "../dtos/user.dto";
+import {
+    CreateUserDTO,
+    LoginUserDTO,
+    UpdateMeDTO,
+    ChangeMyPasswordDTO,
+    SetNewPasswordDTO,
+    RequestPasswordResetCodeDTO,
+    VerifyResetCodeDTO,
+    ResetPasswordWithCodeDTO,
+    GoogleLoginDTO,
+} from "../dtos/user.dto";
 import { ApiResponseHelper } from "../utils/apihelper.util";
 import { Request, Response } from "express";
 const userService = new UserService();
@@ -34,6 +44,24 @@ export class UserController {
             const { user, token } = await userService.loginUser(parsedData.data);
             return ApiResponseHelper.success(res, { user, token }, "Login successful");
         }catch (error: Error | any | unknown) {
+            return ApiResponseHelper.error(
+                res,
+                error.message || "Internal Server Error",
+                error.status || 500
+            );
+        }
+    }
+
+    async googleLogin(req: Request, res: Response) {
+        try {
+            const parsed = GoogleLoginDTO.safeParse(req.body);
+            if (!parsed.success) {
+                return ApiResponseHelper
+                    .error(res, z.prettifyError(parsed.error), 400);
+            }
+            const { user, token } = await userService.loginWithGoogle(parsed.data);
+            return ApiResponseHelper.success(res, { user, token }, "Signed in with Google successfully");
+        } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
                 res,
                 error.message || "Internal Server Error",
@@ -132,6 +160,60 @@ export class UserController {
             const userId = String((req.user as any)._id);
             await userService.changeMyPassword(userId, parsed.data);
             return ApiResponseHelper.success(res, null, "Password changed successfully");
+        } catch (error: Error | any | unknown) {
+            return ApiResponseHelper.error(
+                res,
+                error.message || "Internal Server Error",
+                error.status || 500
+            );
+        }
+    }
+
+    async requestPasswordResetCode(req: Request, res: Response) {
+        try {
+            const parsed = RequestPasswordResetCodeDTO.safeParse(req.body);
+            if (!parsed.success) {
+                return ApiResponseHelper
+                    .error(res, z.prettifyError(parsed.error), 400);
+            }
+            await userService.requestPasswordResetCode(parsed.data);
+            return ApiResponseHelper.success(res, null, "If that email exists, a reset code has been sent");
+        } catch (error: Error | any | unknown) {
+            return ApiResponseHelper.error(
+                res,
+                error.message || "Internal Server Error",
+                error.status || 500
+            );
+        }
+    }
+
+    async verifyResetCode(req: Request, res: Response) {
+        try {
+            const parsed = VerifyResetCodeDTO.safeParse(req.body);
+            if (!parsed.success) {
+                return ApiResponseHelper
+                    .error(res, z.prettifyError(parsed.error), 400);
+            }
+            await userService.verifyResetCode(parsed.data);
+            return ApiResponseHelper.success(res, null, "Code verified");
+        } catch (error: Error | any | unknown) {
+            return ApiResponseHelper.error(
+                res,
+                error.message || "Internal Server Error",
+                error.status || 500
+            );
+        }
+    }
+
+    async resetPasswordWithCode(req: Request, res: Response) {
+        try {
+            const parsed = ResetPasswordWithCodeDTO.safeParse(req.body);
+            if (!parsed.success) {
+                return ApiResponseHelper
+                    .error(res, z.prettifyError(parsed.error), 400);
+            }
+            await userService.resetPasswordWithCode(parsed.data);
+            return ApiResponseHelper.success(res, null, "Password reset successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
                 res,

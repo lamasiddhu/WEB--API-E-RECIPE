@@ -7,6 +7,10 @@ const userController = new UserController();
 
 userRouter.post("/register", userController.createUser);
 userRouter.post("/login", userController.loginUser);
+userRouter.post("/google", userController.googleLogin);
+userRouter.post("/forgot-password", userController.requestPasswordResetCode);
+userRouter.post("/verify-reset-code", userController.verifyResetCode);
+userRouter.post("/reset-password-code", userController.resetPasswordWithCode);
 
 userRouter.get("/me", authorizedMiddleware, userController.getMe);
 userRouter.put("/me", authorizedMiddleware, userController.updateMe);

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Logo from "@/app/_components/Logo";
 import { handleLoginUser } from "@/lib/actions/auth-action";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { setSession } from "@/lib/session";
@@ -77,11 +78,7 @@ export default function LoginPage() {
 
         {/* Center */}
         <div className="relative z-10 flex flex-col items-center justify-center flex-1">
-          <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/20">
-            <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </div>
+          <Logo size="lg" variant="light" className="mb-6" />
           <h2 className="text-2xl font-bold mb-2">Welcome to E-Recipe</h2>
           <p className="text-amber-100 text-center max-w-xs">
             Discover, share, and organize your favorite recipes
@@ -102,11 +99,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#B34B20] to-[#A64B1C] rounded-xl flex items-center justify-center">
-              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
+            <Logo size="md" variant="dark" />
           </div>
 
           {/* Welcome */}
@@ -217,19 +210,8 @@ export default function LoginPage() {
           </div>
 
           {/* Social Login */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex justify-center">
             <GoogleSignInButton onCredential={handleGoogleCredential} onError={setMessage} />
-            <button
-              type="button"
-              disabled
-              title="Facebook sign-in isn't available yet"
-              className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-400 cursor-not-allowed"
-            >
-              <svg className="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              <span className="font-semibold">Coming soon</span>
-            </button>
           </div>
 
           {/* Footer */}

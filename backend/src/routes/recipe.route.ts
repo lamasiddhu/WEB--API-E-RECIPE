@@ -6,10 +6,10 @@ import { proOrAdminMiddleware } from "../middlewares/proOrAdmin.middleware";
 const recipeRouter = Router();
 const recipeController = new RecipeController();
 
-// Public browsing. getRecipeById uses optionalAuthMiddleware so an entitlement
-// check can run for logged-in viewers, while anonymous viewers still get the
-// (locked-down) recipe instead of a 401.
-recipeRouter.get("/", recipeController.getAllRecipes);
+// Public browsing. Both use optionalAuthMiddleware so an entitlement check
+// can run for logged-in viewers, while anonymous viewers still get the
+// (locked-down) recipes instead of a 401.
+recipeRouter.get("/", optionalAuthMiddleware, recipeController.getAllRecipes);
 recipeRouter.get("/:id", optionalAuthMiddleware, recipeController.getRecipeById);
 
 // Admins and Pro members can add recipes; editing/deleting is admin-only or

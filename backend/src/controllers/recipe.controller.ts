@@ -1,16 +1,27 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { RecipeService } from "../services/recipe.service";
+import { RecipeService, Viewer } from "../services/recipe.service";
 import { CreateRecipeDTO, UpdateRecipeDTO } from "../dtos/recipe.dto";
 import { ApiResponseHelper } from "../utils/apihelper.util";
 
 const recipeService = new RecipeService();
 
+function buildViewer(req: Request): Viewer | undefined {
+    const reqUser = req.user as any;
+    if (!reqUser) return undefined;
+    return {
+        id: String(reqUser._id),
+        role: reqUser.role,
+        isPro: !!reqUser.isPro,
+        purchasedRecipeIds: (reqUser.purchasedRecipeIds || []).map((id: unknown) => String(id)),
+    };
+}
+
 export class RecipeController {
     async getAllRecipes(req: Request, res: Response) {
         try {
             const search = typeof req.query.search === "string" ? req.query.search : "";
-            const recipes = await recipeService.getAllRecipes(search);
+            const recipes = await recipeService.getAllRecipes(search, buildViewer(req));
             return ApiResponseHelper.success(res, recipes, "Recipes fetched successfully");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
@@ -19,16 +30,7 @@ export class RecipeController {
 
     async getRecipeById(req: Request, res: Response) {
         try {
-            const reqUser = req.user as any;
-            const viewer = reqUser
-                ? {
-                    id: String(reqUser._id),
-                    role: reqUser.role,
-                    isPro: !!reqUser.isPro,
-                    purchasedRecipeIds: (reqUser.purchasedRecipeIds || []).map((id: unknown) => String(id)),
-                }
-                : undefined;
-            const recipe = await recipeService.getRecipeById(String(req.params.id), viewer);
+            const recipe = await recipeService.getRecipeById(String(req.params.id), buildViewer(req));
             return ApiResponseHelper.success(res, recipe, "Recipe fetched successfully");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);

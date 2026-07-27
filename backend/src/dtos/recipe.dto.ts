@@ -23,6 +23,10 @@ export const CreateRecipeDTO = z.object({
     imageUrl: z.string().optional(),
     price: z.number().nonnegative().optional(),
     tags: z.array(z.enum(RECIPE_TAGS)).optional(),
+    videoUrl: z
+        .string()
+        .regex(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//, "Video URL must be a youtube.com or youtu.be link")
+        .optional(),
 });
 export type CreateRecipeDTO = z.infer<typeof CreateRecipeDTO>;
 

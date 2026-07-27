@@ -24,6 +24,9 @@ export interface IRecipe extends Document {
     imageUrl?: string;
     price: number;
     tags: string[];
+    // YouTube video walkthrough — only ever set for Normal/Pro recipes, and
+    // only ever sent to entitled viewers (see RecipeService.filterForViewer).
+    videoUrl?: string;
     createdBy?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -55,6 +58,7 @@ const RecipeSchema: Schema = new Schema<IRecipe>(
         imageUrl: { type: String },
         price: { type: Number, default: 0, min: 0 },
         tags: { type: [String], enum: RECIPE_TAGS, default: [] },
+        videoUrl: { type: String },
         createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     },
     { timestamps: true }

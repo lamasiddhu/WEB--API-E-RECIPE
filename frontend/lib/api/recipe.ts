@@ -8,6 +8,7 @@ export interface ApiRecipe {
     description?: string;
     category?: string;
     badge?: string;
+    mealType?: string;
     duration?: string;
     chef?: string;
     servings?: number;

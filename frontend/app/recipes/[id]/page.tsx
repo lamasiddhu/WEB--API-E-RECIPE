@@ -189,6 +189,7 @@ export default function RecipeDetailPage() {
                     title={recipe.title}
                     description={recipe.description || "No description added yet."}
                     badge={recipe.badge || ""}
+                    mealType={recipe.mealType}
                     duration={recipe.duration || "30 min"}
                     chef={recipe.chef || "E-Recipe Kitchen"}
                     imageUrl={recipe.imageUrl}

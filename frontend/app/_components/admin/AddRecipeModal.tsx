@@ -5,7 +5,7 @@ import { X, ImagePlus, Plus, Trash2 } from "lucide-react";
 import { uploadFile } from "../../../lib/api/upload";
 import { resolveAssetUrl } from "../../../lib/api/axios-instance";
 import { ApiRecipe } from "../../../lib/api/recipe";
-import { RECIPE_TAGS } from "../../../lib/recipeTags";
+import { RECIPE_TAGS, MEAL_TYPES } from "../../../lib/recipeTags";
 
 export interface NewRecipeStep {
   title: string;
@@ -19,6 +19,7 @@ export interface NewRecipeInput {
   difficulty: string;
   imageUrl?: string;
   badge?: string;
+  mealType?: string;
   chef?: string;
   description?: string;
   servings?: number;
@@ -48,6 +49,7 @@ export default function AddRecipeModal({ onClose, onAdd, initialData }: AddRecip
   const [badge, setBadge] = useState<"Free" | "Normal" | "Pro">(
     initialData?.badge === "Pro" ? "Pro" : initialData?.badge === "Normal" ? "Normal" : "Free"
   );
+  const [mealType, setMealType] = useState(initialData?.mealType || "");
   const [chef, setChef] = useState(initialData?.chef || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [servings, setServings] = useState(initialData?.servings ? String(initialData.servings) : "4");
@@ -121,6 +123,7 @@ export default function AddRecipeModal({ onClose, onAdd, initialData }: AddRecip
         difficulty,
         imageUrl,
         badge,
+        mealType: mealType || undefined,
         chef: chef.trim() || undefined,
         description: description.trim() || undefined,
         servings: servings ? Number(servings) : undefined,
@@ -207,18 +210,34 @@ export default function AddRecipeModal({ onClose, onAdd, initialData }: AddRecip
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Access Tier
+                Meal Type
               </label>
               <select
-                value={badge}
-                onChange={(e) => setBadge(e.target.value as "Free" | "Normal" | "Pro")}
+                value={mealType}
+                onChange={(e) => setMealType(e.target.value)}
                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B34B20]/20 focus:border-[#B34B20]"
               >
-                <option value="Free">Free</option>
-                <option value="Normal">Normal</option>
-                <option value="Pro">Pro</option>
+                <option value="">Not set</option>
+                {MEAL_TYPES.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+              Access Tier
+            </label>
+            <select
+              value={badge}
+              onChange={(e) => setBadge(e.target.value as "Free" | "Normal" | "Pro")}
+              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B34B20]/20 focus:border-[#B34B20]"
+            >
+              <option value="Free">Free</option>
+              <option value="Normal">Normal</option>
+              <option value="Pro">Pro</option>
+            </select>
           </div>
           <p className="text-xs text-gray-400 -mt-2">
             Free recipes are open to everyone. Normal recipes can be bought individually (or unlocked with Pro access). Pro recipes can&apos;t be purchased. Only Pro members can view them.

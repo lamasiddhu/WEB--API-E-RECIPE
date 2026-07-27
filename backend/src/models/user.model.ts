@@ -22,6 +22,8 @@ export interface IUser extends UserType, Document {
     favoriteRecipeIds: mongoose.Types.ObjectId[];
     purchasedRecipeIds: mongoose.Types.ObjectId[];
     passwordResetRequested: boolean;
+    passwordResetCode?: string;
+    passwordResetCodeExpiresAt?: Date;
     // can add mongo related attr
     _id: mongoose.Types.ObjectId;
     createdAt: Date;
@@ -54,6 +56,8 @@ const UserMongoSchema: Schema = new Schema<IUser>(
         favoriteRecipeIds: { type: [Schema.Types.ObjectId], ref: "Recipe", default: [] },
         purchasedRecipeIds: { type: [Schema.Types.ObjectId], ref: "Recipe", default: [] },
         passwordResetRequested: { type: Boolean, default: false },
+        passwordResetCode: { type: String },
+        passwordResetCodeExpiresAt: { type: Date },
     },
     { timestamps: true }
 )

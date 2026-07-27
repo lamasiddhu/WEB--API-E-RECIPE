@@ -14,6 +14,18 @@ export default function GoogleSignInButton({ onCredential, onError }: GoogleSign
   const buttonRef = useRef<HTMLDivElement>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
+  // Keep the latest callbacks in refs rather than the effect's dependency
+  // array — login/register pages pass new inline function references on
+  // every render, and Google's renderButton appends rather than replaces
+  // the button in the target div, so re-running init/render on every
+  // keystroke was duplicating the button visually.
+  const onCredentialRef = useRef(onCredential);
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+    onErrorRef.current = onError;
+  });
+
   useEffect(() => {
     if (!scriptLoaded || !CLIENT_ID || !buttonRef.current) return;
     const google = (window as typeof window & { google?: any }).google;
@@ -21,11 +33,14 @@ export default function GoogleSignInButton({ onCredential, onError }: GoogleSign
 
     google.accounts.id.initialize({
       client_id: CLIENT_ID,
+      // Force English regardless of the browser/OS locale — Google's button
+      // otherwise auto-translates based on the visitor's language settings.
+      locale: "en",
       callback: (response: { credential?: string }) => {
         if (response.credential) {
-          onCredential(response.credential);
+          onCredentialRef.current(response.credential);
         } else {
-          onError?.("Google sign-in didn't return a credential");
+          onErrorRef.current?.("Google sign-in didn't return a credential");
         }
       },
     });
@@ -35,7 +50,9 @@ export default function GoogleSignInButton({ onCredential, onError }: GoogleSign
       width: 240,
       text: "continue_with",
     });
-  }, [scriptLoaded, onCredential, onError]);
+    // Deliberately only re-run when the script finishes loading — see the
+    // ref comment above for why onCredential/onError are excluded here.
+  }, [scriptLoaded]);
 
   if (!CLIENT_ID) {
     return (
@@ -53,7 +70,7 @@ export default function GoogleSignInButton({ onCredential, onError }: GoogleSign
   return (
     <>
       <Script
-        src="https://accounts.google.com/gsi/client"
+        src="https://accounts.google.com/gsi/client?hl=en"
         strategy="afterInteractive"
         onLoad={() => setScriptLoaded(true)}
       />

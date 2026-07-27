@@ -21,7 +21,10 @@ const STATUS_CLASSNAMES: Record<Order["status"], string> = {
 export default function OrderDetailModal({ order, onClose, onCancelClick, onAccept, isAccepting }: OrderDetailModalProps) {
   const canCancel = order.status === "Processing" || order.status === "Delayed";
   const canAccept = order.format === "physical" && canCancel;
-  const items = order.item.split(",").map((entry) => entry.trim()).filter(Boolean);
+  // Orders placed before structured `items` existed only have the flattened
+  // summary string — fall back to splitting that for those older orders.
+  const hasStructuredItems = !!order.items && order.items.length > 0;
+  const fallbackItems = order.item.split(",").map((entry) => entry.trim()).filter(Boolean);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -61,11 +64,24 @@ export default function OrderDetailModal({ order, onClose, onCancelClick, onAcce
 
           <div className="flex items-start gap-3">
             <Package className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Items</p>
-              <ul className="text-sm text-gray-900 space-y-1">
-                {items.length > 0 ? items.map((entry, i) => <li key={i}>• {entry}</li>) : <li>{order.item}</li>}
-              </ul>
+              {hasStructuredItems ? (
+                <ul className="text-sm text-gray-900 space-y-1">
+                  {order.items!.map((entry, i) => (
+                    <li key={i} className="flex items-center justify-between gap-3">
+                      <span>{entry.title} × {entry.quantity}</span>
+                      <span className="text-gray-500 shrink-0">
+                        {entry.unitPrice > 0 ? `NPR ${(entry.unitPrice * entry.quantity).toFixed(2)}` : "Free"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="text-sm text-gray-900 space-y-1">
+                  {fallbackItems.length > 0 ? fallbackItems.map((entry, i) => <li key={i}>• {entry}</li>) : <li>{order.item}</li>}
+                </ul>
+              )}
             </div>
           </div>
 

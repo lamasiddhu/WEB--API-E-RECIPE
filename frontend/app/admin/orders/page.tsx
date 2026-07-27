@@ -15,6 +15,7 @@ const toOrder = (apiOrder: ApiOrder): Order => ({
   orderNumber: apiOrder.orderNumber,
   customer: apiOrder.customer,
   item: apiOrder.item,
+  items: apiOrder.items,
   price: apiOrder.price,
   status: apiOrder.status,
   createdAt: apiOrder.createdAt,

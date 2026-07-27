@@ -2,11 +2,19 @@
 
 import { CheckCircle2, AlertTriangle, Clock, Ban, Trash2, Monitor, BookOpen, PackageCheck, Loader2 } from "lucide-react";
 
+export interface OrderItem {
+  recipeId: string;
+  title: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
   customer: string;
   item: string;
+  items?: OrderItem[];
   price?: number;
   status: "Completed" | "Processing" | "Delayed" | "Cancelled";
   createdAt?: string;

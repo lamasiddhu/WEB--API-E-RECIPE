@@ -29,6 +29,7 @@ export interface NewRecipeInput {
   tags?: string[];
   ingredients?: string[];
   steps?: NewRecipeStep[];
+  videoUrl?: string;
 }
 
 interface AddRecipeModalProps {
@@ -54,6 +55,7 @@ export default function AddRecipeModal({ onClose, onAdd, initialData }: AddRecip
   const [protein, setProtein] = useState(initialData?.protein ? String(initialData.protein) : "");
   const [price, setPrice] = useState(initialData?.price ? String(initialData.price) : "");
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
+  const [videoUrl, setVideoUrl] = useState(initialData?.videoUrl || "");
 
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -128,6 +130,7 @@ export default function AddRecipeModal({ onClose, onAdd, initialData }: AddRecip
         tags: tags.length > 0 ? tags : undefined,
         ingredients: ingredients.length > 0 ? ingredients : undefined,
         steps: steps.length > 0 ? steps : undefined,
+        videoUrl: badge !== "Free" && videoUrl.trim() ? videoUrl.trim() : undefined,
       });
       onClose();
     } catch (err) {
@@ -220,6 +223,24 @@ export default function AddRecipeModal({ onClose, onAdd, initialData }: AddRecip
           <p className="text-xs text-gray-400 -mt-2">
             Free recipes are open to everyone. Normal recipes can be bought individually (or unlocked with Pro access). Pro recipes can&apos;t be purchased. Only Pro members can view them.
           </p>
+
+          {badge !== "Free" && (
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                Video Walkthrough (YouTube)
+              </label>
+              <input
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#B34B20]/20 focus:border-[#B34B20]"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Only shown to users who&apos;ve unlocked this recipe (purchased, or Pro access). Free recipes can&apos;t have a video.
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>

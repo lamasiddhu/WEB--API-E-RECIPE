@@ -17,6 +17,22 @@ import { addFavorite, removeFavorite } from "../../../lib/api/auth";
 import { addToShoppingList } from "../../../lib/api/shoppingList";
 import { canAccessRecipe, getRecipeTier } from "../../../lib/recipeAccess";
 
+function getYoutubeEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    let videoId = "";
+    if (parsed.hostname.includes("youtu.be")) {
+      videoId = parsed.pathname.slice(1);
+    } else if (parsed.hostname.includes("youtube.com")) {
+      videoId = parsed.searchParams.get("v") || "";
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function RecipeDetailPage() {
   const params = useParams<{ id: string }>();
   const { user, updateUser } = useAuth();
@@ -177,6 +193,19 @@ export default function RecipeDetailPage() {
                     chef={recipe.chef || "E-Recipe Kitchen"}
                     imageUrl={recipe.imageUrl}
                   />
+                  {!isLocked && getYoutubeEmbedUrl(recipe.videoUrl) && (
+                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                      <div className="aspect-video">
+                        <iframe
+                          src={getYoutubeEmbedUrl(recipe.videoUrl) || undefined}
+                          title="Recipe video walkthrough"
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
                   {isLocked ? (
                     <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
                       <div className="w-14 h-14 rounded-full bg-orange-50 text-[#B34B20] flex items-center justify-center mx-auto mb-4">

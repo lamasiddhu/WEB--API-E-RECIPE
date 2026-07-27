@@ -20,6 +20,7 @@ export interface ApiRecipe {
     imageUrl?: string;
     price?: number;
     tags?: string[];
+    videoUrl?: string;
     createdBy?: string;
 }
 

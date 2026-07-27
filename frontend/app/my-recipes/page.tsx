@@ -73,6 +73,7 @@ export default function MyRecipesPage() {
         protein: input.protein,
         ingredients: input.ingredients,
         steps: input.steps,
+        videoUrl: input.videoUrl,
       });
       loadRecipes();
     } catch (err: unknown) {
@@ -108,6 +109,7 @@ export default function MyRecipesPage() {
         protein: input.protein,
         ingredients: input.ingredients,
         steps: input.steps,
+        videoUrl: input.videoUrl,
       });
       loadRecipes();
     } catch (err: unknown) {

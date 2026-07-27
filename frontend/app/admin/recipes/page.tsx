@@ -54,6 +54,7 @@ export default function AdminRecipesPage() {
         protein: input.protein,
         ingredients: input.ingredients,
         steps: input.steps,
+        videoUrl: input.videoUrl,
       });
       setRecipes((prev) => [toRecipe(result.data), ...prev]);
     } catch (err: unknown) {
@@ -89,6 +90,7 @@ export default function AdminRecipesPage() {
         protein: input.protein,
         ingredients: input.ingredients,
         steps: input.steps,
+        videoUrl: input.videoUrl,
       });
       setRecipes((prev) => prev.map((recipe) => (recipe.id === editingRecipe._id ? toRecipe(result.data) : recipe)));
     } catch (err: unknown) {

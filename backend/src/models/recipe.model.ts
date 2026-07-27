@@ -6,12 +6,14 @@ export interface IRecipeStep {
 }
 
 export const RECIPE_TAGS = ["Vegan", "Quick Meals", "Gluten-Free", "Low Carb", "Breakfast"] as const;
+export const MEAL_TYPES = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
 export interface IRecipe extends Document {
     title: string;
     description: string;
     category: string;
     badge: string;
+    mealType?: string;
     duration: string;
     chef: string;
     servings: number;
@@ -46,6 +48,7 @@ const RecipeSchema: Schema = new Schema<IRecipe>(
         description: { type: String, default: "" },
         category: { type: String, default: "Uncategorized" },
         badge: { type: String, enum: ["Free", "Normal", "Pro"], default: "Free" },
+        mealType: { type: String, enum: MEAL_TYPES },
         duration: { type: String, default: "30 min" },
         chef: { type: String, default: "" },
         servings: { type: Number, default: 4 },

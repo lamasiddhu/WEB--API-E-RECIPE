@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RECIPE_TAGS } from "../models/recipe.model";
+import { RECIPE_TAGS, MEAL_TYPES } from "../models/recipe.model";
 
 const RecipeStepDTO = z.object({
     title: z.string().min(1, "Step title is required"),
@@ -11,6 +11,7 @@ export const CreateRecipeDTO = z.object({
     description: z.string().optional(),
     category: z.string().optional(),
     badge: z.enum(["Free", "Normal", "Pro"]).optional(),
+    mealType: z.enum(MEAL_TYPES).optional(),
     duration: z.string().optional(),
     chef: z.string().optional(),
     servings: z.number().int().positive().optional(),

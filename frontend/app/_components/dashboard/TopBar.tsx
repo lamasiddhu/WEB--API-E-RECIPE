@@ -55,13 +55,16 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
   };
 
   // Pending Pro requests / order alerts are actionable admin tasks, not
-  // general notifications — they stay visible even when notifications are off.
+  // general notifications — they stay visible in the list even when
+  // notifications are off. The red dot itself, though, follows read state
+  // like everything else: "Mark all read" silences it even while a request
+  // is still pending, and a genuinely new pending item lights it back up.
   const notificationsEnabled = user?.notificationPreferences?.push !== false;
   const pendingProRequests = notifications.filter((n) => n.type === "pro_request" && n.status === "pending");
   const otherNotifications = notificationsEnabled
     ? notifications.filter((n) => !(n.type === "pro_request" && n.status === "pending"))
     : [];
-  const hasUnread = pendingProRequests.length > 0 || otherNotifications.some((n) => !n.isRead) || pendingOrders.length > 0;
+  const hasUnread = pendingProRequests.some((n) => !n.isRead) || otherNotifications.some((n) => !n.isRead);
 
   const handleRespond = async (id: string, action: "approve" | "reject") => {
     setRespondingId(id);

@@ -29,6 +29,16 @@ export const login = async (data: any) => {
     }
 }
 
+// Sign in (or auto-register) using a verified Google ID token
+export const loginWithGoogle = async (idToken: string) => {
+    try {
+        const response = await axiosInstance.post(API.AUTH.GOOGLE_LOGIN, { idToken });
+        return response.data;
+    } catch (error: Error | any) {
+        throw new Error(error?.response?.data?.message || 'Google sign-in failed');
+    }
+}
+
 // Fetch the logged-in user's own profile
 export const getMe = async () => {
     try {
@@ -101,5 +111,33 @@ export const setNewPassword = async (newPassword: string) => {
         return response.data;
     } catch (error: unknown) {
         throw new Error(extractErrorMessage(error, 'Failed to set new password'));
+    }
+}
+
+// Forgot password flow (no login required): request a 6-digit code by email
+export const requestPasswordResetCode = async (email: string) => {
+    try {
+        const response = await axiosInstance.post(API.AUTH.FORGOT_PASSWORD, { email });
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, 'Failed to request reset code'));
+    }
+}
+
+export const verifyResetCode = async (email: string, code: string) => {
+    try {
+        const response = await axiosInstance.post(API.AUTH.VERIFY_RESET_CODE, { email, code });
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, 'Invalid or expired code'));
+    }
+}
+
+export const resetPasswordWithCode = async (email: string, code: string, newPassword: string) => {
+    try {
+        const response = await axiosInstance.post(API.AUTH.RESET_PASSWORD_CODE, { email, code, newPassword });
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, 'Failed to reset password'));
     }
 }

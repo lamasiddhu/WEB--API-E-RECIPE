@@ -4,16 +4,25 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, ArrowLeft } from "lucide-react";
+import { requestPasswordResetCode } from "../../../lib/api/auth";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
     setIsSubmitting(true);
-    router.push("/verify-code");
+    try {
+      await requestPasswordResetCode(email);
+      router.push(`/verify-code?email=${encodeURIComponent(email)}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send reset code");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -64,6 +73,8 @@ export default function ForgotPasswordPage() {
                 />
               </div>
             </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <button
               type="submit"

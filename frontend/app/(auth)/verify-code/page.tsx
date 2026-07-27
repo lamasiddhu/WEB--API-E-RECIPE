@@ -1,16 +1,22 @@
 "use client";
 
-import { KeyboardEvent, useRef, useState } from "react";
+import { KeyboardEvent, Suspense, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Lock, HelpCircle } from "lucide-react";
+import { requestPasswordResetCode, verifyResetCode } from "../../../lib/api/auth";
 
 const CODE_LENGTH = 6;
 
-export default function VerifyCodePage() {
+function VerifyCodeForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [resent, setResent] = useState(false);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, value: string) => {
@@ -29,12 +35,40 @@ export default function VerifyCodePage() {
     }
   };
 
-  const handleSubmit = () => {
+  const code = digits.join("");
+
+  const handleSubmit = async () => {
+    if (!email) {
+      setError("Missing email — please restart from the Forgot Password page.");
+      return;
+    }
+    setError("");
     setIsSubmitting(true);
-    router.push("/reset-password");
+    try {
+      await verifyResetCode(email, code);
+      router.push(`/reset-password?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid or expired code");
+      setIsSubmitting(false);
+    }
   };
 
-  const code = digits.join("");
+  const handleResend = async () => {
+    if (!email) return;
+    setIsResending(true);
+    setError("");
+    setResent(false);
+    try {
+      await requestPasswordResetCode(email);
+      setDigits(Array(CODE_LENGTH).fill(""));
+      setResent(true);
+      setTimeout(() => setResent(false), 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend code");
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-6">
@@ -48,7 +82,9 @@ export default function VerifyCodePage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Enter Verification Code</h2>
         <p className="text-gray-500 mb-6">
-          We&apos;ve sent a 6-digit secure code to your registered chef email. Please enter it below to confirm your session.
+          {email
+            ? `We've sent a 6-digit code to ${email}. Enter it below.`
+            : "We've sent a 6-digit code to your email. Enter it below."}
         </p>
 
         <div className="flex justify-center gap-2 mb-6">
@@ -68,6 +104,9 @@ export default function VerifyCodePage() {
           ))}
         </div>
 
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+        {resent && <p className="text-sm text-green-600 mb-4">A new code has been sent.</p>}
+
         <button
           onClick={handleSubmit}
           disabled={code.length !== CODE_LENGTH || isSubmitting}
@@ -75,17 +114,18 @@ export default function VerifyCodePage() {
             code.length !== CODE_LENGTH || isSubmitting ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          <ShieldCheck className="w-4 h-4" /> Verify My Account
+          <ShieldCheck className="w-4 h-4" /> {isSubmitting ? "Verifying..." : "Verify My Account"}
         </button>
 
         <p className="text-sm text-gray-500 mt-4">
           Didn&apos;t receive the code?{" "}
           <button
             type="button"
-            onClick={() => setDigits(Array(CODE_LENGTH).fill(""))}
-            className="text-[#B34B20] font-semibold hover:underline"
+            onClick={handleResend}
+            disabled={isResending || !email}
+            className="text-[#B34B20] font-semibold hover:underline disabled:opacity-60"
           >
-            Resend Code
+            {isResending ? "Sending..." : "Resend Code"}
           </button>
         </p>
       </div>
@@ -102,5 +142,13 @@ export default function VerifyCodePage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function VerifyCodePage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyCodeForm />
+    </Suspense>
   );
 }

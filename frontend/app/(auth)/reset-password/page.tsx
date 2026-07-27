@@ -1,14 +1,19 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RotateCcw, Lock, ShieldCheck, Eye, EyeOff, Check, CheckCircle2 } from "lucide-react";
-import { setNewPassword } from "../../../lib/api/auth";
+import { setNewPassword, resetPasswordWithCode } from "../../../lib/api/auth";
 import { useAuth } from "../../../lib/contexts/AuthContext";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+  const code = searchParams.get("code") || "";
+  const isCodeFlow = !!email && !!code;
+
   const { isAuthenticated, loading } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,7 +42,11 @@ export default function ResetPasswordPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      await setNewPassword(password);
+      if (isCodeFlow) {
+        await resetPasswordWithCode(email, code, password);
+      } else {
+        await setNewPassword(password);
+      }
       setIsDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to set new password");
@@ -46,7 +55,7 @@ export default function ResetPasswordPage() {
     }
   };
 
-  if (!loading && !isAuthenticated) {
+  if (!isCodeFlow && !loading && !isAuthenticated) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-6 text-center">
         <p className="text-gray-700 font-semibold mb-2">You need to be signed in to reset your password.</p>
@@ -67,10 +76,10 @@ export default function ResetPasswordPage() {
             Your password has been changed. Use your new password the next time you sign in.
           </p>
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push(isCodeFlow ? "/login" : "/dashboard")}
             className="w-full bg-gradient-to-r from-[#B34B20] to-[#A64B1C] text-white font-semibold py-3.5 rounded-xl hover:from-[#A64B1C] hover:to-[#963D19] transition-all shadow-lg shadow-orange-900/20"
           >
-            Back to Dashboard
+            {isCodeFlow ? "Back to Sign In" : "Back to Dashboard"}
           </button>
         </div>
       </div>
@@ -169,8 +178,8 @@ export default function ResetPasswordPage() {
             {isSubmitting ? "Saving..." : "Reset Password"} <span aria-hidden>→</span>
           </button>
 
-          <Link href="/dashboard" className="block text-center text-sm text-gray-500 hover:text-[#B34B20]">
-            ← Back to Dashboard
+          <Link href={isCodeFlow ? "/login" : "/dashboard"} className="block text-center text-sm text-gray-500 hover:text-[#B34B20]">
+            ← Back
           </Link>
         </form>
       </div>
@@ -180,5 +189,13 @@ export default function ResetPasswordPage() {
         <p className="text-xs text-gray-400 uppercase tracking-wider">Excellence in Every Bite</p>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

@@ -24,6 +24,7 @@ export interface IUser extends UserType, Document {
     passwordResetRequested: boolean;
     passwordResetCode?: string;
     passwordResetCodeExpiresAt?: Date;
+    passwordResetAttempts: number;
     // can add mongo related attr
     _id: mongoose.Types.ObjectId;
     createdAt: Date;
@@ -58,6 +59,7 @@ const UserMongoSchema: Schema = new Schema<IUser>(
         passwordResetRequested: { type: Boolean, default: false },
         passwordResetCode: { type: String },
         passwordResetCodeExpiresAt: { type: Date },
+        passwordResetAttempts: { type: Number, default: 0 },
     },
     { timestamps: true }
 )

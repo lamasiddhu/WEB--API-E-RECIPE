@@ -203,6 +203,8 @@ export class UserService {
         await userRepository.update(id, { password: hashedPassword, passwordResetRequested: false });
     }
 
+    private static readonly MAX_RESET_ATTEMPTS = 5;
+
     async requestPasswordResetCode(data: RequestPasswordResetCodeDTO): Promise<void> {
         const user = await userRepository.getUserByEmail(data.email);
         // Don't reveal whether the email exists — respond the same way either way.
@@ -213,9 +215,14 @@ export class UserService {
         await userRepository.update(String(user._id), {
             passwordResetCode: codeHash,
             passwordResetCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+            passwordResetAttempts: 0,
         });
 
-        await sendPasswordResetCodeEmail(user.email, code);
+        // Fire-and-forget: don't make the caller wait on the SMTP round trip.
+        // Awaiting it here would make "email exists" responses measurably
+        // slower than "email doesn't exist" ones, defeating the whole point
+        // of responding identically either way.
+        sendPasswordResetCodeEmail(user.email, code).catch(() => {});
     }
 
     private async validateResetCode(email: string, code: string): Promise<IUser> {
@@ -226,8 +233,22 @@ export class UserService {
         if (user.passwordResetCodeExpiresAt.getTime() < Date.now()) {
             throw new HttpException(400, "Invalid or expired code");
         }
+        if (user.passwordResetAttempts >= UserService.MAX_RESET_ATTEMPTS) {
+            // Lock this code out entirely rather than letting guesses continue —
+            // the user has to request a fresh one.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await userRepository.update(String(user._id), {
+                passwordResetCode: null,
+                passwordResetCodeExpiresAt: null,
+            } as any);
+            throw new HttpException(429, "Too many incorrect attempts. Please request a new code.");
+        }
+
         const isValid = await bcryptjs.compare(code, user.passwordResetCode);
         if (!isValid) {
+            await userRepository.update(String(user._id), {
+                passwordResetAttempts: user.passwordResetAttempts + 1,
+            });
             throw new HttpException(400, "Invalid or expired code");
         }
         return user;

@@ -18,13 +18,14 @@ export class OrderService {
 
     async createOrder(data: CreateOrderDTO, userId?: string) {
         const orderNumber = data.orderNumber || `ORD-${Date.now().toString(36).toUpperCase()}`;
-        const { recipeIds, format, status, ...rest } = data;
+        const { recipeIds, items, format, status, ...rest } = data;
         return await orderRepository.create({
             ...rest,
             orderNumber,
             format,
             status: status || (format === "physical" ? "Processing" : "Completed"),
             recipeIds: (recipeIds || []).map((id) => new mongoose.Types.ObjectId(id)),
+            items: (items || []).map((item) => ({ ...item, recipeId: new mongoose.Types.ObjectId(item.recipeId) })),
             userId: userId ? new mongoose.Types.ObjectId(userId) : undefined,
         });
     }

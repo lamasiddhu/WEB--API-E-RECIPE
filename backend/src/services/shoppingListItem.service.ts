@@ -79,8 +79,14 @@ export class ShoppingListItemService {
         const itemSummary = items.map((item) => `${item.title} x${item.quantity}`).join(", ");
         const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const recipeIds = items.map((item) => String(item.recipeId));
+        const orderItems = items.map((item) => ({
+            recipeId: String(item.recipeId),
+            title: item.title,
+            quantity: item.quantity,
+            unitPrice: item.price,
+        }));
         const order = await orderService.createOrder(
-            { customer: customerName, item: itemSummary, price: totalPrice, format, recipeIds },
+            { customer: customerName, item: itemSummary, items: orderItems, price: totalPrice, format, recipeIds },
             userId
         );
 

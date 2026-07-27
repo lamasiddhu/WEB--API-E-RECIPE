@@ -68,9 +68,13 @@ export class RecipeService {
     // Video walkthroughs only ever make sense for Normal/Pro (purchasable)
     // recipes — a Free recipe never gets one, enforced here so a client can't
     // sneak a videoUrl onto a Free-tier recipe even if the admin UI never offers it.
+    // Uses `null` rather than `undefined` — Mongoose silently drops `undefined`
+    // values from update payloads (treats them as "field not mentioned"), so
+    // `undefined` here would never actually clear an existing videoUrl on update.
     private stripVideoIfFree<T extends { badge?: string; videoUrl?: string }>(data: T): T {
         if (data.badge === "Free") {
-            return { ...data, videoUrl: undefined };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return { ...data, videoUrl: null } as any;
         }
         return data;
     }

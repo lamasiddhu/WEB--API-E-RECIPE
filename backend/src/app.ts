@@ -14,6 +14,7 @@ import uploadRouter from "./routes/upload.route";
 import shoppingListRouter from "./routes/shoppingListItem.route";
 import notificationRouter from "./routes/notification.route";
 import appSettingsRouter from "./routes/admin/settings.route";
+import aiAssistantRouter from "./routes/aiAssistant.route";
 
 const app: Application = express();
 
@@ -42,6 +43,7 @@ app.use("/api/v1/upload", uploadRouter);
 app.use("/api/v1/shopping-list", shoppingListRouter);
 app.use("/api/v1/notifications", notificationRouter);
 app.use("/api/v1/admin/settings", appSettingsRouter);
+app.use("/api/v1/ai", aiAssistantRouter);
 
 app.use((req: Request, res: Response) => {
   return res.status(404).json({ message: "Endpoint not found" });

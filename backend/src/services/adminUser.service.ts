@@ -76,4 +76,10 @@ export class AdminUserService {
         if (!deleted) throw new HttpException(404, "User not found");
         return true;
     }
+
+    async removeUserPurchasedRecipe(userId: string, recipeId: string) {
+        const updated = await userRepository.removePurchasedRecipe(userId, recipeId);
+        if (!updated) throw new HttpException(404, "User not found");
+        return stripPassword(updated);
+    }
 }

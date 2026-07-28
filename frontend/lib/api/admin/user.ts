@@ -9,6 +9,7 @@ export interface AdminUser {
     role: "admin" | "user";
     avatarUrl?: string;
     isPro?: boolean;
+    purchasedRecipeIds?: string[];
     createdAt: string;
 }
 
@@ -87,5 +88,15 @@ export const deleteUser = async (id: string) => {
     }
     catch (error: unknown) {
         throw new Error(extractErrorMessage(error, 'Failed to delete user'));
+    }
+}
+
+export const removeUserPurchasedRecipe = async (id: string, recipeId: string) => {
+    try {
+        const response = await axiosInstance.delete(API.ADMIN.USERS.REMOVE_PURCHASED(id, recipeId));
+        return response.data; // response body
+    }
+    catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, 'Failed to remove recipe from the user\'s library'));
     }
 }

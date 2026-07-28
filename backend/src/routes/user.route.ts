@@ -18,5 +18,6 @@ userRouter.put("/me/password", authorizedMiddleware, userController.changeMyPass
 userRouter.put("/me/password/reset", authorizedMiddleware, userController.setNewPassword);
 userRouter.post("/me/favorites/:recipeId", authorizedMiddleware, userController.addFavorite);
 userRouter.delete("/me/favorites/:recipeId", authorizedMiddleware, userController.removeFavorite);
+userRouter.delete("/me/purchased/:recipeId", authorizedMiddleware, userController.removePurchasedRecipe);
 
 export default userRouter;

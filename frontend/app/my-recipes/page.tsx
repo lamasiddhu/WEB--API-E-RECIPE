@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Clock, Star, Loader2, Plus } from "lucide-react";
+import { CheckCircle2, Clock, Star, Loader2, Plus, Trash2 } from "lucide-react";
 import Sidebar from "../_components/dashboard/Sidebar";
 import TopBar from "../_components/dashboard/TopBar";
 import RecipeLibraryTable, { Recipe } from "../_components/admin/RecipeLibraryTable";
@@ -15,6 +15,7 @@ import {
   deleteRecipe,
   ApiRecipe,
 } from "../../lib/api/recipe";
+import { removeMyPurchasedRecipe } from "../../lib/api/auth";
 import { useAuth } from "../../lib/contexts/AuthContext";
 import { resolveAssetUrl } from "../../lib/api/axios-instance";
 
@@ -30,13 +31,14 @@ const toRecipe = (apiRecipe: ApiRecipe): Recipe => ({
 });
 
 export default function MyRecipesPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [recipes, setRecipes] = useState<ApiRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<ApiRecipe | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const canAddRecipes = user?.role === "admin" || !!user?.isPro;
 
@@ -128,6 +130,19 @@ export default function MyRecipesPage() {
     }
   };
 
+  const handleRemovePurchased = async (recipeId: string) => {
+    if (!confirm("Remove this recipe from your library? You'll need to buy it again to unlock it.")) return;
+    setRemovingId(recipeId);
+    try {
+      await removeMyPurchasedRecipe(recipeId);
+      updateUser({ purchasedRecipeIds: (user?.purchasedRecipeIds || []).filter((id) => id !== recipeId) });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to remove recipe from your library");
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#FDFBF7] overflow-hidden">
       <div
@@ -196,9 +211,27 @@ export default function MyRecipesPage() {
                     <span className="absolute top-3 left-3 bg-[#B34B20] text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase z-10">
                       {recipe.badge || "Normal"}
                     </span>
-                    <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center z-10 text-green-400">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </span>
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                      <span className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-green-400">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemovePurchased(recipe._id);
+                        }}
+                        disabled={removingId === recipe._id}
+                        title="Remove from your library"
+                        className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500/80 hover:text-white disabled:opacity-60 transition-colors"
+                      >
+                        {removingId === recipe._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                     <div className="relative z-10">
                       <h4 className="font-bold text-lg mb-1 line-clamp-1">{recipe.title}</h4>
                       <div className="flex items-center gap-3 text-xs text-gray-200">

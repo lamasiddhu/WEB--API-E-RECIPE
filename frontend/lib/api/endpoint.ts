@@ -8,6 +8,7 @@ export const API = {
         CHANGE_PASSWORD: "/api/v1/auth/me/password",
         SET_NEW_PASSWORD: "/api/v1/auth/me/password/reset",
         FAVORITES: (recipeId: string) => `/api/v1/auth/me/favorites/${recipeId}`,
+        REMOVE_PURCHASED: (recipeId: string) => `/api/v1/auth/me/purchased/${recipeId}`,
         FORGOT_PASSWORD: "/api/v1/auth/forgot-password",
         VERIFY_RESET_CODE: "/api/v1/auth/verify-reset-code",
         RESET_PASSWORD_CODE: "/api/v1/auth/reset-password-code",
@@ -21,6 +22,7 @@ export const API = {
             UPDATE_PASSWORD: (id: string) => `/api/v1/admin/users/${id}/password`,
             REQUEST_PASSWORD_RESET: (id: string) => `/api/v1/admin/users/${id}/request-password-reset`,
             DELETE: (id: string) => `/api/v1/admin/users/${id}`,
+            REMOVE_PURCHASED: (id: string, recipeId: string) => `/api/v1/admin/users/${id}/purchased/${recipeId}`,
         },
         SETTINGS: {
             GET: "/api/v1/admin/settings",

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Filter, Plus, KeyRound, Edit, Trash2, Loader2, ShieldCheck } from "lucide-react";
-import { getAllUsers, createUser, updateUser, deleteUser, requestPasswordReset, AdminUser } from "../../../lib/api/admin/user";
+import { Search, Filter, Plus, KeyRound, Edit, Trash2, Loader2, ShieldCheck, BookOpen } from "lucide-react";
+import { getAllUsers, createUser, updateUser, deleteUser, requestPasswordReset, removeUserPurchasedRecipe, AdminUser } from "../../../lib/api/admin/user";
+import { getAllRecipes, ApiRecipe } from "../../../lib/api/recipe";
 import AddUserModal, { NewUserInput } from "../../_components/admin/AddUserModal";
 import EditUserModal, { EditUserInput } from "../../_components/admin/EditUserModal";
+import UserPurchasesModal from "../../_components/admin/UserPurchasesModal";
 
 const PAGE_LIMIT = 10;
 
@@ -34,6 +36,14 @@ export default function UsersPage() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [resettingId, setResettingId] = useState<string | null>(null);
+  const [purchasesUser, setPurchasesUser] = useState<AdminUser | null>(null);
+  const [recipes, setRecipes] = useState<ApiRecipe[]>([]);
+
+  useEffect(() => {
+    getAllRecipes()
+      .then((result) => setRecipes(result.data || []))
+      .catch(() => setRecipes([]));
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -73,6 +83,16 @@ export default function UsersPage() {
     if (!editingUser) return;
     await updateUser(editingUser._id, input);
     setUsers((prev) => prev.map((u) => (u._id === editingUser._id ? { ...u, ...input } : u)));
+  };
+
+  const handleRemovePurchasedRecipe = async (recipeId: string) => {
+    if (!purchasesUser) return;
+    await removeUserPurchasedRecipe(purchasesUser._id, recipeId);
+    const updatedIds = (purchasesUser.purchasedRecipeIds || []).filter((id) => id !== recipeId);
+    setPurchasesUser({ ...purchasesUser, purchasedRecipeIds: updatedIds });
+    setUsers((prev) =>
+      prev.map((u) => (u._id === purchasesUser._id ? { ...u, purchasedRecipeIds: updatedIds } : u))
+    );
   };
 
   const handleRequestPasswordReset = async (user: AdminUser) => {
@@ -222,6 +242,13 @@ export default function UsersPage() {
                             <KeyRound className="w-4 h-4" />
                           )}
                         </button>
+                        <button
+                          onClick={() => setPurchasesUser(user)}
+                          title="Manage purchased recipes"
+                          className="p-2 text-gray-400 hover:text-[#B34B20] hover:bg-orange-50 rounded-lg transition-colors"
+                        >
+                          <BookOpen className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -265,6 +292,19 @@ export default function UsersPage() {
           initialData={{ fullName: editingUser.fullName, email: editingUser.email, role: editingUser.role, isPro: !!editingUser.isPro }}
           onClose={() => setEditingUser(null)}
           onSave={handleSaveEdit}
+        />
+      )}
+      {purchasesUser && (
+        <UserPurchasesModal
+          user={purchasesUser}
+          recipes={(purchasesUser.purchasedRecipeIds || [])
+            .map((id) => {
+              const recipe = recipes.find((r) => r._id === id);
+              return recipe ? { id: recipe._id, title: recipe.title } : null;
+            })
+            .filter((r): r is { id: string; title: string } => !!r)}
+          onClose={() => setPurchasesUser(null)}
+          onRemove={handleRemovePurchasedRecipe}
         />
       )}
     </div>

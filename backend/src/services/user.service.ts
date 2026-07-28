@@ -157,6 +157,15 @@ export class UserService {
         await userRepository.grantPurchasedRecipes(id, recipeIds);
     }
 
+    async removePurchasedRecipe(id: string, recipeId: string): Promise<IUser> {
+        const updated = await userRepository.removePurchasedRecipe(id, recipeId);
+        if (!updated) {
+            throw new HttpException(404, "User not found");
+        }
+        const { password, ...userWithoutPassword } = updated.toObject();
+        return userWithoutPassword as IUser;
+    }
+
     async addFavorite(id: string, recipeId: string): Promise<IUser> {
         const updated = await userRepository.addFavorite(id, recipeId);
         if (!updated) {

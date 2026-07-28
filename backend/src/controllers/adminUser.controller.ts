@@ -89,4 +89,13 @@ export class AdminUserController {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
         }
     }
+
+    async removeUserPurchasedRecipe(req: Request, res: Response) {
+        try {
+            const user = await adminUserService.removeUserPurchasedRecipe(String(req.params.id), String(req.params.recipeId));
+            return ApiResponseHelper.success(res, user, "Recipe removed from the user's library");
+        } catch (error: any) {
+            return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
+        }
+    }
 }

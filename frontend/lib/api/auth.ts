@@ -94,6 +94,16 @@ export const removeFavorite = async (recipeId: string) => {
     }
 }
 
+// Remove a recipe from the logged-in user's own purchased library
+export const removeMyPurchasedRecipe = async (recipeId: string) => {
+    try {
+        const response = await axiosInstance.delete(API.AUTH.REMOVE_PURCHASED(recipeId));
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, 'Failed to remove recipe from your library'));
+    }
+}
+
 // Change the logged-in user's own password
 export const changeMyPassword = async (data: { currentPassword: string; newPassword: string }) => {
     try {

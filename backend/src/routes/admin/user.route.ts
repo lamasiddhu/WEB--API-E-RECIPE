@@ -16,5 +16,6 @@ adminUserRouter.put("/:id", parseMultipartFields, adminUserController.updateUser
 adminUserRouter.put("/:id/password", adminUserController.updatePassword);
 adminUserRouter.post("/:id/request-password-reset", adminUserController.requestPasswordReset);
 adminUserRouter.delete("/:id", adminUserController.deleteUser);
+adminUserRouter.delete("/:id/purchased/:recipeId", adminUserController.removeUserPurchasedRecipe);
 
 export default adminUserRouter;

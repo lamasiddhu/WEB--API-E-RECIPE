@@ -17,6 +17,7 @@ export interface IUserRepository {
     addFavorite(id: string, recipeId: string): Promise<IUser | null>;
     removeFavorite(id: string, recipeId: string): Promise<IUser | null>;
     grantPurchasedRecipes(id: string, recipeIds: string[]): Promise<IUser | null>;
+    removePurchasedRecipe(id: string, recipeId: string): Promise<IUser | null>;
 }
 
 export class UserMongoRepository implements IUserRepository {
@@ -87,6 +88,14 @@ export class UserMongoRepository implements IUserRepository {
         return await UserModel.findByIdAndUpdate(
             id,
             { $addToSet: { purchasedRecipeIds: { $each: recipeIds.map((r) => new mongoose.Types.ObjectId(r)) } } },
+            { new: true }
+        );
+    }
+
+    async removePurchasedRecipe(id: string, recipeId: string): Promise<IUser | null> {
+        return await UserModel.findByIdAndUpdate(
+            id,
+            { $pull: { purchasedRecipeIds: new mongoose.Types.ObjectId(recipeId) } },
             { new: true }
         );
     }

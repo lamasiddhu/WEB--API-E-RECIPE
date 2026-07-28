@@ -131,6 +131,20 @@ export class UserController {
         }
     }
 
+    async removePurchasedRecipe(req: Request, res: Response) {
+        try {
+            const userId = String((req.user as any)._id);
+            const user = await userService.removePurchasedRecipe(userId, String(req.params.recipeId));
+            return ApiResponseHelper.success(res, user, "Recipe removed from your library");
+        } catch (error: Error | any | unknown) {
+            return ApiResponseHelper.error(
+                res,
+                error.message || "Internal Server Error",
+                error.status || 500
+            );
+        }
+    }
+
     async setNewPassword(req: Request, res: Response) {
         try {
             const parsed = SetNewPasswordDTO.safeParse(req.body);

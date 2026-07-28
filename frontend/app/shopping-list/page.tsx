@@ -12,7 +12,7 @@ import {
   removeFromShoppingList,
   checkoutShoppingList,
   ApiShoppingListItem,
-} from "../../lib/api/shoppingList";
+} from "@/lib/composition/api";
 import { useAuth } from "../../lib/contexts/AuthContext";
 
 const toCartItem = (item: ApiShoppingListItem): CartItemData => ({

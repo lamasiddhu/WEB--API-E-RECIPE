@@ -1,15 +1,20 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { OrderService } from "../services/order.service";
 import { CreateOrderDTO, CancelOrderDTO } from "../dtos/order.dto";
 import { ApiResponseHelper } from "../utils/apihelper.util";
-
-const orderService = new OrderService();
+import {
+    acceptOrderUseCase,
+    cancelOrderUseCase,
+    createOrderUseCase,
+    deleteOrderUseCase,
+    getAllOrdersUseCase,
+    getMyOrdersUseCase,
+} from "../container";
 
 export class OrderController {
     async getAllOrders(req: Request, res: Response) {
         try {
-            const orders = await orderService.getAllOrders();
+            const orders = await getAllOrdersUseCase.execute();
             return ApiResponseHelper.success(res, orders, "Orders fetched successfully");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
@@ -19,7 +24,7 @@ export class OrderController {
     async getMyOrders(req: Request, res: Response) {
         try {
             const userId = String((req.user as any)._id);
-            const orders = await orderService.getMyOrders(userId);
+            const orders = await getMyOrdersUseCase.execute(userId);
             return ApiResponseHelper.success(res, orders, "Your orders fetched successfully");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
@@ -33,7 +38,7 @@ export class OrderController {
                 return ApiResponseHelper.error(res, z.prettifyError(parsed.error), 400);
             }
             const userId = req.user ? String((req.user as any)._id) : undefined;
-            const order = await orderService.createOrder(parsed.data, userId);
+            const order = await createOrderUseCase.execute(parsed.data, userId);
             return ApiResponseHelper.success(res, order, "Order created successfully", 201);
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
@@ -46,7 +51,7 @@ export class OrderController {
             if (!parsed.success) {
                 return ApiResponseHelper.error(res, z.prettifyError(parsed.error), 400);
             }
-            const order = await orderService.cancelOrder(String(req.params.id), parsed.data.reason);
+            const order = await cancelOrderUseCase.execute(String(req.params.id), parsed.data.reason);
             return ApiResponseHelper.success(res, order, "Order cancelled successfully");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
@@ -55,7 +60,7 @@ export class OrderController {
 
     async acceptOrder(req: Request, res: Response) {
         try {
-            const order = await orderService.acceptOrder(String(req.params.id));
+            const order = await acceptOrderUseCase.execute(String(req.params.id));
             return ApiResponseHelper.success(res, order, "Order accepted");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);
@@ -64,7 +69,7 @@ export class OrderController {
 
     async deleteOrder(req: Request, res: Response) {
         try {
-            await orderService.deleteOrder(String(req.params.id));
+            await deleteOrderUseCase.execute(String(req.params.id));
             return ApiResponseHelper.success(res, null, "Order deleted successfully");
         } catch (error: any) {
             return ApiResponseHelper.error(res, error.message || "Internal Server Error", error.status || 500);

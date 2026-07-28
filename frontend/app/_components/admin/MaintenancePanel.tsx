@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Wrench, Loader2 } from "lucide-react";
-import { getAppSettings, setMaintenanceMode, clearSystemCache } from "../../../lib/api/admin/settings";
+import { getAppSettings, setMaintenanceMode, clearSystemCache } from "@/lib/composition/api";
 
 const formatRelativeTime = (iso?: string): string => {
   if (!iso) return "Never cleared yet";

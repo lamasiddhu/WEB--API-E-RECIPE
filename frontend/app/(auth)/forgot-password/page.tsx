@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, ArrowLeft } from "lucide-react";
-import { requestPasswordResetCode } from "../../../lib/api/auth";
+import { requestPasswordResetCode } from "@/lib/composition/api";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();

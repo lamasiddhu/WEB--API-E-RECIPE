@@ -8,7 +8,13 @@ export type NotificationType =
     | "announcement"
     | "order_cancelled"
     | "order_accepted"
-    | "password_reset_requested";
+    | "password_reset_requested"
+    | "welcome"
+    | "new_recipe"
+    | "recipe_submission"
+    | "recipe_approved"
+    | "recipe_rejected"
+    | "personal_message";
 export type NotificationStatus = "pending" | "approved" | "rejected";
 
 export interface INotification extends Document {
@@ -19,6 +25,10 @@ export interface INotification extends Document {
     message: string;
     relatedUserId?: mongoose.Types.ObjectId;
     relatedUserName?: string;
+    relatedRecipeId?: mongoose.Types.ObjectId;
+    relatedRecipeTitle?: string;
+    imageUrl?: string;
+    senderName?: string;
     status?: NotificationStatus;
     isRead: boolean;
     // Broadcast notifications (audience "all") are a single shared document —
@@ -45,6 +55,12 @@ const NotificationSchema: Schema = new Schema<INotification>(
                 "order_cancelled",
                 "order_accepted",
                 "password_reset_requested",
+                "welcome",
+                "new_recipe",
+                "recipe_submission",
+                "recipe_approved",
+                "recipe_rejected",
+                "personal_message",
             ],
             required: true,
         },
@@ -52,6 +68,10 @@ const NotificationSchema: Schema = new Schema<INotification>(
         message: { type: String, required: true },
         relatedUserId: { type: Schema.Types.ObjectId, ref: "User" },
         relatedUserName: { type: String },
+        relatedRecipeId: { type: Schema.Types.ObjectId, ref: "Recipe" },
+        relatedRecipeTitle: { type: String },
+        imageUrl: { type: String },
+        senderName: { type: String, default: "E-RECIPE" },
         status: { type: String, enum: ["pending", "approved", "rejected"] },
         isRead: { type: Boolean, default: false },
         readBy: { type: [Schema.Types.ObjectId], ref: "User", default: [] },

@@ -11,13 +11,14 @@ import {
   getAllRecipes,
   getRecipeById,
   createRecipe,
+  submitRecipe,
   updateRecipe,
   deleteRecipe,
   ApiRecipe,
-} from "../../lib/api/recipe";
-import { removeMyPurchasedRecipe } from "../../lib/api/auth";
+} from "@/lib/composition/api";
+import { removeMyPurchasedRecipe } from "@/lib/composition/api";
 import { useAuth } from "../../lib/contexts/AuthContext";
-import { resolveAssetUrl } from "../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 const toRecipe = (apiRecipe: ApiRecipe): Recipe => ({
   id: apiRecipe._id,
@@ -59,7 +60,8 @@ export default function MyRecipesPage() {
 
   const handleAdd = async (input: NewRecipeInput) => {
     try {
-      await createRecipe({
+      const saveRecipe = user?.role === "admin" ? createRecipe : submitRecipe;
+      await saveRecipe({
         title: input.title,
         category: input.category,
         duration: input.time,
@@ -78,7 +80,8 @@ export default function MyRecipesPage() {
         steps: input.steps,
         videoUrl: input.videoUrl,
       });
-      loadRecipes();
+      if (user?.role === "admin") loadRecipes();
+      else setError("Recipe submitted to E-RECIPE for approval.");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to add recipe");
     }

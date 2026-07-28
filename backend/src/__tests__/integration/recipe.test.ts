@@ -103,16 +103,33 @@ describe("Recipe API Integration Tests", () => {
             expect(res.body.data.ingredients.length).toBeGreaterThan(0);
         });
 
-        test("should reveal full content to a Pro user for both Normal and Pro tier recipes", async () => {
-            const normalRes = await request(app)
+        test("should require a Pro user to purchase Normal and Pro recipes before revealing full content", async () => {
+            const lockedNormalRes = await request(app)
                 .get(`/api/v1/recipes/${normalRecipeId}`)
                 .set("Authorization", `Bearer ${proToken}`);
-            const proRes = await request(app)
+            const lockedProRes = await request(app)
                 .get(`/api/v1/recipes/${proRecipeId}`)
                 .set("Authorization", `Bearer ${proToken}`);
 
-            expect(normalRes.body.data.ingredients.length).toBeGreaterThan(0);
-            expect(proRes.body.data.videoUrl).toBeTruthy();
+            expect(lockedNormalRes.body.data.ingredients).toHaveLength(0);
+            expect(lockedProRes.body.data.ingredients).toHaveLength(0);
+            expect(lockedProRes.body.data.videoUrl).toBeUndefined();
+
+            await UserModel.updateOne(
+                { email: emails.pro },
+                { $addToSet: { purchasedRecipeIds: { $each: [normalRecipeId, proRecipeId] } } }
+            );
+
+            const purchasedNormalRes = await request(app)
+                .get(`/api/v1/recipes/${normalRecipeId}`)
+                .set("Authorization", `Bearer ${proToken}`);
+            const purchasedProRes = await request(app)
+                .get(`/api/v1/recipes/${proRecipeId}`)
+                .set("Authorization", `Bearer ${proToken}`);
+
+            expect(purchasedNormalRes.body.data.ingredients.length).toBeGreaterThan(0);
+            expect(purchasedProRes.body.data.ingredients.length).toBeGreaterThan(0);
+            expect(purchasedProRes.body.data.videoUrl).toBeTruthy();
         });
 
         test("should reveal Normal-tier content once purchased", async () => {

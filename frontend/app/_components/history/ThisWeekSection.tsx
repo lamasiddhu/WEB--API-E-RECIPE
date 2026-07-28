@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock, Package } from "lucide-react";
-import { ApiOrder } from "../../../lib/api/order";
+import { ApiOrder } from "@/lib/composition/api";
 
 const STATUS_CLASSNAMES: Record<ApiOrder["status"], string> = {
   Completed: "bg-green-100 text-green-700",

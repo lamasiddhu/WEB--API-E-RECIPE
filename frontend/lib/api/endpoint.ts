@@ -32,8 +32,10 @@ export const API = {
     },
     RECIPES: {
         GET_ALL: "/api/v1/recipes",
+        GET_ALL_ADMIN: "/api/v1/recipes/admin/all",
         GET_BY_ID: (id: string) => `/api/v1/recipes/${id}`,
         CREATE: "/api/v1/recipes",
+        SUBMIT: "/api/v1/recipes/submit",
         UPDATE: (id: string) => `/api/v1/recipes/${id}`,
         DELETE: (id: string) => `/api/v1/recipes/${id}`,
     },
@@ -64,9 +66,17 @@ export const API = {
         GET_ALL: "/api/v1/notifications",
         PRO_REQUEST: "/api/v1/notifications/pro-request",
         RESPOND: (id: string) => `/api/v1/notifications/${id}/respond`,
+        RESPOND_RECIPE: (id: string) => `/api/v1/notifications/${id}/respond-recipe`,
         READ: (id: string) => `/api/v1/notifications/${id}/read`,
         READ_ALL: "/api/v1/notifications/read-all",
         CLEAR_ALL: "/api/v1/notifications/clear-all",
         ANNOUNCE: "/api/v1/notifications/announce",
+        PERSONAL: "/api/v1/notifications/personal",
+    },
+    REVIEWS: {
+        FOR_RECIPE: (recipeId: string) => `/api/v1/reviews/recipe/${recipeId}`,
+        GET_ALL: "/api/v1/reviews",
+        UPDATE: (id: string) => `/api/v1/reviews/${id}`,
+        DELETE: (id: string) => `/api/v1/reviews/${id}`,
     },
 };

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Calendar, Edit } from "lucide-react";
 import { useAuth } from "../../../lib/contexts/AuthContext";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 import EditProfileModal from "./EditProfileModal";
 
 export default function ProfileHeader() {

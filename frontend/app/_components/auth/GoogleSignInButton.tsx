@@ -8,7 +8,7 @@ interface GoogleSignInButtonProps {
   onError?: (message: string) => void;
 }
 
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+import { googleClientId as CLIENT_ID } from "@/lib/composition/config";
 
 export default function GoogleSignInButton({ onCredential, onError }: GoogleSignInButtonProps) {
   const buttonRef = useRef<HTMLDivElement>(null);

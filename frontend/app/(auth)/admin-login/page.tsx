@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Briefcase, Lock, Eye, EyeOff, KeyRound } from "lucide-react";
 import { handleLoginUser } from "@/lib/actions/auth-action";
-import { setSession } from "@/lib/session";
+import { setSession } from "@/lib/composition/session";
 import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function AdminLoginPage() {

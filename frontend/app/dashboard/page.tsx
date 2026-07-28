@@ -6,7 +6,7 @@ import TopBar from "../_components/dashboard/TopBar";
 import ChefSpecials from "../_components/dashboard/ChefSpecials";
 import PromoBanner from "../_components/dashboard/PromoBanner";
 import TrendingSection from "../_components/dashboard/TrendingSection";
-import { getAllRecipes, ApiRecipe } from "../../lib/api/recipe";
+import { getAllRecipes, ApiRecipe } from "@/lib/composition/api";
 
 export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

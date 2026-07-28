@@ -5,10 +5,10 @@ import Link from "next/link";
 import { Heart, Clock, Star, Loader2 } from "lucide-react";
 import Sidebar from "../_components/dashboard/Sidebar";
 import TopBar from "../_components/dashboard/TopBar";
-import { getAllRecipes, ApiRecipe } from "../../lib/api/recipe";
-import { removeFavorite } from "../../lib/api/auth";
+import { getAllRecipes, ApiRecipe } from "@/lib/composition/api";
+import { removeFavorite } from "@/lib/composition/api";
 import { useAuth } from "../../lib/contexts/AuthContext";
-import { resolveAssetUrl } from "../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 export default function FavoritesPage() {
   const { user, updateUser } = useAuth();

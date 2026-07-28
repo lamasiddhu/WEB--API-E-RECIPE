@@ -1,27 +1,8 @@
 import axios from "axios";
 import axiosInstance from "./axios-instance";
 import { API } from "./endpoint";
-
-export interface ApiNotification {
-    _id: string;
-    audience: "admin" | "user" | "all";
-    recipientId?: string;
-    type:
-        | "pro_request"
-        | "pro_approved"
-        | "pro_rejected"
-        | "announcement"
-        | "order_cancelled"
-        | "order_accepted"
-        | "password_reset_requested";
-    title: string;
-    message: string;
-    relatedUserId?: string;
-    relatedUserName?: string;
-    status?: "pending" | "approved" | "rejected";
-    isRead: boolean;
-    createdAt: string;
-}
+import { Notification } from "../domain/entities";
+export type ApiNotification = Notification;
 
 const extractErrorMessage = (error: unknown, fallback: string): string => {
     if (axios.isAxiosError(error)) {
@@ -54,6 +35,32 @@ export const respondToProRequest = async (id: string, action: "approve" | "rejec
         return response.data;
     } catch (error: unknown) {
         throw new Error(extractErrorMessage(error, "Failed to review request"));
+    }
+};
+
+export const respondToRecipeSubmission = async (id: string, action: "approve" | "reject") => {
+    try {
+        const response = await axiosInstance.patch(API.NOTIFICATIONS.RESPOND_RECIPE(id), { action });
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, "Failed to review recipe"));
+    }
+};
+
+export const sendPersonalNotification = async (
+    recipientId: string,
+    message: string,
+    title?: string
+) => {
+    try {
+        const response = await axiosInstance.post(API.NOTIFICATIONS.PERSONAL, {
+            recipientId,
+            message,
+            title,
+        });
+        return response.data;
+    } catch (error: unknown) {
+        throw new Error(extractErrorMessage(error, "Failed to send notification"));
     }
 };
 

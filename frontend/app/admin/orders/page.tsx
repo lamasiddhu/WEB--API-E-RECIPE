@@ -6,7 +6,7 @@ import OrderCard, { Order } from "../../_components/admin/OrderCard";
 import OrderDetailModal from "../../_components/admin/OrderDetailModal";
 import CancelOrderModal from "../../_components/admin/CancelOrderModal";
 import LogisticsSummary from "../../_components/admin/LogisticsSummary";
-import { getAllOrders, cancelOrder, acceptOrder, deleteOrder, ApiOrder } from "../../../lib/api/order";
+import { getAllOrders, cancelOrder, acceptOrder, deleteOrder, ApiOrder } from "@/lib/composition/api";
 
 const FILTERS = ["All Orders", "Today", "Delayed", "Cancelled"];
 

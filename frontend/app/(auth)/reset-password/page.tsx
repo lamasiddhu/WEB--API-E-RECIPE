@@ -4,7 +4,7 @@ import { FormEvent, Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RotateCcw, Lock, ShieldCheck, Eye, EyeOff, Check, CheckCircle2 } from "lucide-react";
-import { setNewPassword, resetPasswordWithCode } from "../../../lib/api/auth";
+import { setNewPassword, resetPasswordWithCode } from "@/lib/composition/api";
 import { useAuth } from "../../../lib/contexts/AuthContext";
 
 function ResetPasswordForm() {

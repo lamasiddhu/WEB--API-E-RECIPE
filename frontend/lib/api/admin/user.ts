@@ -1,17 +1,7 @@
 import axios from "axios";
 import axiosInstance from "../axios-instance";
 import { API } from "../endpoint";
-
-export interface AdminUser {
-    _id: string;
-    fullName: string;
-    email: string;
-    role: "admin" | "user";
-    avatarUrl?: string;
-    isPro?: boolean;
-    purchasedRecipeIds?: string[];
-    createdAt: string;
-}
+export type { AdminUser } from "../../domain/entities";
 
 const extractErrorMessage = (error: unknown, fallback: string): string => {
     if (axios.isAxiosError(error)) {

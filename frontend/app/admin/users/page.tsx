@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Search, Filter, Plus, KeyRound, Edit, Trash2, Loader2, ShieldCheck, BookOpen } from "lucide-react";
-import { getAllUsers, createUser, updateUser, deleteUser, requestPasswordReset, removeUserPurchasedRecipe, AdminUser } from "../../../lib/api/admin/user";
-import { getAllRecipes, ApiRecipe } from "../../../lib/api/recipe";
+import { getAllUsers, createUser, updateUser, deleteUser, requestPasswordReset, removeUserPurchasedRecipe, resolveAssetUrl, AdminUser } from "@/lib/composition/api";
+import { getAllRecipes, ApiRecipe } from "@/lib/composition/api";
 import AddUserModal, { NewUserInput } from "../../_components/admin/AddUserModal";
 import EditUserModal, { EditUserInput } from "../../_components/admin/EditUserModal";
 import UserPurchasesModal from "../../_components/admin/UserPurchasesModal";
@@ -196,9 +196,18 @@ export default function UsersPage() {
                   <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B34B20] to-[#A64B1C] flex items-center justify-center text-white font-bold text-xs">
-                          {initials(user.fullName)}
-                        </div>
+                        {user.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={resolveAssetUrl(user.avatarUrl)}
+                            alt={user.fullName}
+                            className="w-10 h-10 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B34B20] to-[#A64B1C] flex items-center justify-center text-white font-bold text-xs shrink-0">
+                            {initials(user.fullName)}
+                          </div>
+                        )}
                         <div>
                           <p className="font-semibold text-gray-900">{user.fullName}</p>
                           <p className="text-xs text-gray-500">{user.email}</p>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Heart, BookMarked, Package } from "lucide-react";
 import { useAuth } from "../../../lib/contexts/AuthContext";
-import { getMyOrders } from "../../../lib/api/order";
+import { getMyOrders } from "@/lib/composition/api";
 
 export default function StatsCards() {
   const { user } = useAuth();

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Clock, ChefHat, Trash2, Eye, Pencil } from "lucide-react";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 export interface Recipe {
   id: string;
@@ -13,6 +13,7 @@ export interface Recipe {
   imageUrl?: string;
   price?: number;
   badge?: string;
+  approvalStatus?: "pending" | "approved" | "rejected";
 }
 
 interface RecipeLibraryTableProps {
@@ -58,6 +59,15 @@ export default function RecipeLibraryTable({ recipes, onEdit, onDelete }: Recipe
               >
                 {recipe.badge || "Free"}
               </span>
+              {recipe.approvalStatus && recipe.approvalStatus !== "approved" && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                  recipe.approvalStatus === "pending"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-red-100 text-red-700"
+                }`}>
+                  {recipe.approvalStatus}
+                </span>
+              )}
             </div>
             <h3 className="font-semibold text-gray-900 truncate">{recipe.title}</h3>
             <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">

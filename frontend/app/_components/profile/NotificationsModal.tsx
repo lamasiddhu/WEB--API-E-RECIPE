@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, Bell } from "lucide-react";
-import { updateMe, NotificationPreferencesInput } from "../../../lib/api/auth";
+import { updateMe, NotificationPreferencesInput } from "@/lib/composition/api";
 
 interface NotificationsModalProps {
   currentPreferences?: NotificationPreferencesInput;

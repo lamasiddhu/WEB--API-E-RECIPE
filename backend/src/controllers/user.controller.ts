@@ -1,4 +1,3 @@
-import { UserService } from "../services/user.service";
 import { z } from "zod";
 import {
     CreateUserDTO,
@@ -13,7 +12,7 @@ import {
 } from "../dtos/user.dto";
 import { ApiResponseHelper } from "../utils/apihelper.util";
 import { Request, Response } from "express";
-const userService = new UserService();
+import { addFavoriteUseCase, changeMyPasswordUseCase, getMeUseCase, googleLoginUseCase, loginUserUseCase, registerUserUseCase, removeFavoriteUseCase, removePurchasedRecipeFromLibraryUseCase, requestPasswordResetCodeUseCase, resetPasswordWithCodeUseCase, setNewPasswordUseCase, updateMeUseCase, verifyResetCodeUseCase } from "../container";
 
 export class UserController {
     async createUser(req: Request, res: Response) {
@@ -23,7 +22,7 @@ export class UserController {
                 return ApiResponseHelper
                     .error(res, z.prettifyError(userData.error), 400);
             }
-            const user = await userService.createUser(userData.data);
+            const user = await registerUserUseCase.execute(userData.data);
             return ApiResponseHelper.success(res, user, "User created successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -41,7 +40,7 @@ export class UserController {
                 return ApiResponseHelper
                     .error(res, z.prettifyError(parsedData.error), 400);
             }
-            const { user, token } = await userService.loginUser(parsedData.data);
+            const { user, token } = await loginUserUseCase.execute(parsedData.data);
             return ApiResponseHelper.success(res, { user, token }, "Login successful");
         }catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -59,7 +58,7 @@ export class UserController {
                 return ApiResponseHelper
                     .error(res, z.prettifyError(parsed.error), 400);
             }
-            const { user, token } = await userService.loginWithGoogle(parsed.data);
+            const { user, token } = await googleLoginUseCase.execute(parsed.data);
             return ApiResponseHelper.success(res, { user, token }, "Signed in with Google successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -73,7 +72,7 @@ export class UserController {
     async getMe(req: Request, res: Response) {
         try {
             const userId = String((req.user as any)._id);
-            const user = await userService.getMe(userId);
+            const user = await getMeUseCase.execute(userId);
             return ApiResponseHelper.success(res, user, "Profile fetched successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -92,7 +91,7 @@ export class UserController {
                     .error(res, z.prettifyError(parsed.error), 400);
             }
             const userId = String((req.user as any)._id);
-            const user = await userService.updateMe(userId, parsed.data);
+            const user = await updateMeUseCase.execute(userId, parsed.data);
             return ApiResponseHelper.success(res, user, "Profile updated successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -106,7 +105,7 @@ export class UserController {
     async addFavorite(req: Request, res: Response) {
         try {
             const userId = String((req.user as any)._id);
-            const user = await userService.addFavorite(userId, String(req.params.recipeId));
+            const user = await addFavoriteUseCase.execute(userId, String(req.params.recipeId));
             return ApiResponseHelper.success(res, user, "Recipe added to favorites");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -120,7 +119,7 @@ export class UserController {
     async removeFavorite(req: Request, res: Response) {
         try {
             const userId = String((req.user as any)._id);
-            const user = await userService.removeFavorite(userId, String(req.params.recipeId));
+            const user = await removeFavoriteUseCase.execute(userId, String(req.params.recipeId));
             return ApiResponseHelper.success(res, user, "Recipe removed from favorites");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -134,7 +133,7 @@ export class UserController {
     async removePurchasedRecipe(req: Request, res: Response) {
         try {
             const userId = String((req.user as any)._id);
-            const user = await userService.removePurchasedRecipe(userId, String(req.params.recipeId));
+            const user = await removePurchasedRecipeFromLibraryUseCase.execute(userId, String(req.params.recipeId));
             return ApiResponseHelper.success(res, user, "Recipe removed from your library");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -153,7 +152,7 @@ export class UserController {
                     .error(res, z.prettifyError(parsed.error), 400);
             }
             const userId = String((req.user as any)._id);
-            await userService.setNewPassword(userId, parsed.data);
+            await setNewPasswordUseCase.execute(userId, parsed.data);
             return ApiResponseHelper.success(res, null, "Password set successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -172,7 +171,7 @@ export class UserController {
                     .error(res, z.prettifyError(parsed.error), 400);
             }
             const userId = String((req.user as any)._id);
-            await userService.changeMyPassword(userId, parsed.data);
+            await changeMyPasswordUseCase.execute(userId, parsed.data);
             return ApiResponseHelper.success(res, null, "Password changed successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -190,7 +189,7 @@ export class UserController {
                 return ApiResponseHelper
                     .error(res, z.prettifyError(parsed.error), 400);
             }
-            await userService.requestPasswordResetCode(parsed.data);
+            await requestPasswordResetCodeUseCase.execute(parsed.data);
             return ApiResponseHelper.success(res, null, "If that email exists, a reset code has been sent");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -208,7 +207,7 @@ export class UserController {
                 return ApiResponseHelper
                     .error(res, z.prettifyError(parsed.error), 400);
             }
-            await userService.verifyResetCode(parsed.data);
+            await verifyResetCodeUseCase.execute(parsed.data);
             return ApiResponseHelper.success(res, null, "Code verified");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(
@@ -226,7 +225,7 @@ export class UserController {
                 return ApiResponseHelper
                     .error(res, z.prettifyError(parsed.error), 400);
             }
-            await userService.resetPasswordWithCode(parsed.data);
+            await resetPasswordWithCodeUseCase.execute(parsed.data);
             return ApiResponseHelper.success(res, null, "Password reset successfully");
         } catch (error: Error | any | unknown) {
             return ApiResponseHelper.error(

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { readStoredValue, writeStoredValue } from "../composition/localStorage";
 
 type Theme = "light" | "dark";
 
@@ -17,7 +18,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    const stored = readStoredValue(STORAGE_KEY) as Theme | null;
     const initial = stored === "dark" ? "dark" : "light";
     setTheme(initial);
     document.documentElement.classList.toggle("dark", initial === "dark");
@@ -26,7 +27,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const toggleTheme = () => {
     setTheme((prev) => {
       const next = prev === "dark" ? "light" : "dark";
-      localStorage.setItem(STORAGE_KEY, next);
+      writeStoredValue(STORAGE_KEY, next);
       document.documentElement.classList.toggle("dark", next === "dark");
       return next;
     });

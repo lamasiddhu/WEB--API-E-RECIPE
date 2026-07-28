@@ -1,34 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getToken, getStoredUser, updateStoredUser, clearSession } from "../session";
+import { getToken, getStoredUser, updateStoredUser, clearSession } from "../composition/session";
+import { User } from "../domain/entities";
 
 // 1. Define the shape of your user data
-interface NotificationPreferences {
-  email: boolean;
-  push: boolean;
-  recipeRecommendations: boolean;
-  weeklyDigest: boolean;
-}
-
-interface User {
-  _id: string;
-  email: string;
-  role: "admin" | "user";
-  fullName: string;
-  avatarUrl?: string;
-  phone?: string;
-  bio?: string;
-  createdAt?: string;
-  isProfilePublic?: boolean;
-  isPro?: boolean;
-  proRequestPending?: boolean;
-  favoriteRecipeIds?: string[];
-  purchasedRecipeIds?: string[];
-  notificationPreferences?: NotificationPreferences;
-  [key: string]: any;
-}
 
 // 2. Define what the Context will provide
 interface AuthContextProps {
@@ -69,14 +46,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth();
   }, []);
 
-  const updateUser = (partial: Partial<User>) => {
+  const updateUser = useCallback((partial: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return prev;
       const next = { ...prev, ...partial };
       updateStoredUser(partial);
       return next;
     });
-  };
+  }, []);
 
   const logout = () => {
     clearSession();

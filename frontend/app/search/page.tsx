@@ -7,9 +7,11 @@ import SearchBar from "../_components/search/SearchBar";
 import FilterChips from "../_components/search/FilterChips";
 import RecentSearches from "../_components/search/RecentSearches";
 import RecommendedGrid, { DisplayRecipe } from "../_components/search/RecommendedGrid";
-import { getAllRecipes, ApiRecipe } from "../../lib/api/recipe";
+import { getAllRecipes, ApiRecipe } from "@/lib/composition/api";
 import { useAuth } from "../../lib/contexts/AuthContext";
-import { addFavorite, removeFavorite } from "../../lib/api/auth";
+import { addFavorite, removeFavorite } from "@/lib/composition/api";
+import { readStoredValue, writeStoredValue } from "../../lib/composition/localStorage";
+import AllFiltersModal, { RecipeFilters } from "../_components/search/AllFiltersModal";
 
 const toDisplayRecipe = (recipe: ApiRecipe): DisplayRecipe => ({
   id: recipe._id,
@@ -20,7 +22,11 @@ const toDisplayRecipe = (recipe: ApiRecipe): DisplayRecipe => ({
   time: recipe.duration || "30 min",
   rating: recipe.rating || 0,
   imageUrl: recipe.imageUrl,
+  category: recipe.category,
+  mealType: recipe.mealType,
 });
+
+const EMPTY_FILTERS: RecipeFilters = { tags: [], mealTypes: [], categories: [], badges: [] };
 
 const MAX_RECENT_SEARCHES = 6;
 
@@ -29,7 +35,7 @@ const recentSearchesKey = (userId?: string) => `recent_searches_${userId || "gue
 const loadRecentSearches = (userId?: string): string[] => {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(recentSearchesKey(userId));
+    const raw = readStoredValue(recentSearchesKey(userId));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -38,7 +44,7 @@ const loadRecentSearches = (userId?: string): string[] => {
 
 const saveRecentSearches = (userId: string | undefined, searches: string[]) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem(recentSearchesKey(userId), JSON.stringify(searches));
+  writeStoredValue(recentSearchesKey(userId), JSON.stringify(searches));
 };
 
 export default function SearchPage() {
@@ -46,6 +52,9 @@ export default function SearchPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [filters, setFilters] = useState<RecipeFilters>(EMPTY_FILTERS);
+  const [allFiltersOpen, setAllFiltersOpen] = useState(false);
+  const [advancedActive, setAdvancedActive] = useState(false);
   const [recipes, setRecipes] = useState<DisplayRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -66,12 +75,22 @@ export default function SearchPage() {
   const filteredRecipes = useMemo(() => {
     const q = query.trim().toLowerCase();
     const matches = recipes.filter((recipe) => {
-      const matchesQuery = !q || recipe.title.toLowerCase().includes(q);
-      const matchesFilter = !activeFilter || recipe.tags?.includes(activeFilter);
-      return matchesQuery && matchesFilter;
+      const searchable = [recipe.title, recipe.category, recipe.mealType, ...(recipe.tags || [])]
+        .filter(Boolean).join(" ").toLowerCase();
+      const matchesQuery = !q || searchable.includes(q);
+      const matchesTags = !filters.tags.length || filters.tags.some((tag) => recipe.tags?.includes(tag));
+      const matchesMealType = !filters.mealTypes.length || (!!recipe.mealType && filters.mealTypes.includes(recipe.mealType));
+      const matchesCategory = !filters.categories.length || (!!recipe.category && filters.categories.includes(recipe.category));
+      const matchesBadge = !filters.badges.length || (!!recipe.badge && filters.badges.includes(recipe.badge));
+      return matchesQuery && matchesTags && matchesMealType && matchesCategory && matchesBadge;
     });
     return [...matches].sort((a, b) => a.title.localeCompare(b.title));
-  }, [recipes, query, activeFilter]);
+  }, [recipes, query, filters]);
+
+  const categories = useMemo(
+    () => [...new Set(recipes.map((recipe) => recipe.category).filter((value): value is string => !!value))].sort(),
+    [recipes]
+  );
 
   const commitSearch = (raw: string) => {
     const trimmed = raw.trim();
@@ -143,7 +162,16 @@ export default function SearchPage() {
             </div>
 
             <SearchBar value={query} onChange={setQuery} onSearch={commitSearch} />
-            <FilterChips active={activeFilter} onSelect={setActiveFilter} />
+            <FilterChips
+              active={activeFilter}
+              onSelect={(filter) => {
+                setActiveFilter(filter);
+                setAdvancedActive(false);
+                setFilters({ ...EMPTY_FILTERS, tags: filter ? [filter] : [] });
+              }}
+              onAllFilters={() => setAllFiltersOpen(true)}
+              hasAdvancedFilters={advancedActive}
+            />
 
             <RecentSearches
               searches={recentSearches}
@@ -158,9 +186,25 @@ export default function SearchPage() {
             <RecommendedGrid
               recipes={filteredRecipes}
               isLoading={isLoading}
-              onViewMore={() => setQuery("")}
+              onViewMore={() => {
+                setQuery("");
+                setActiveFilter(null);
+                setAdvancedActive(false);
+                setFilters(EMPTY_FILTERS);
+              }}
               favoriteIds={favoriteIds}
               onToggleFavorite={handleToggleFavorite}
+            />
+            <AllFiltersModal
+              open={allFiltersOpen}
+              value={filters}
+              categories={categories}
+              onClose={() => setAllFiltersOpen(false)}
+              onApply={(next) => {
+                setFilters(next);
+                setActiveFilter(null);
+                setAdvancedActive(Object.values(next).some((values) => values.length > 0));
+              }}
             />
           </div>
         </main>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Heart, Star, Clock, Loader2 } from "lucide-react";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 export interface DisplayRecipe {
   id: string;
@@ -10,6 +10,8 @@ export interface DisplayRecipe {
   tag: string;
   badge?: string;
   tags?: string[];
+  category?: string;
+  mealType?: string;
   time: string;
   rating: number;
   imageUrl?: string;

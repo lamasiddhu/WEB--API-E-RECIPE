@@ -1,26 +1,9 @@
 import axios from "axios";
 import axiosInstance from "./axios-instance";
 import { API } from "./endpoint";
-
-export interface ApiOrderItem {
-    recipeId: string;
-    title: string;
-    quantity: number;
-    unitPrice: number;
-}
-
-export interface ApiOrder {
-    _id: string;
-    orderNumber: string;
-    customer: string;
-    item: string;
-    items?: ApiOrderItem[];
-    price?: number;
-    status: "Processing" | "Completed" | "Delayed" | "Cancelled";
-    createdAt?: string;
-    cancelReason?: string;
-    format?: "digital" | "physical";
-}
+import { Order, OrderItem } from "../domain/entities";
+export type ApiOrder = Order;
+export type ApiOrderItem = OrderItem;
 
 const extractErrorMessage = (error: unknown, fallback: string): string => {
     if (axios.isAxiosError(error)) {

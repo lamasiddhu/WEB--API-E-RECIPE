@@ -2,9 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { X, ImagePlus, Plus, Trash2 } from "lucide-react";
-import { uploadFile } from "../../../lib/api/upload";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
-import { ApiRecipe } from "../../../lib/api/recipe";
+import { uploadFile } from "@/lib/composition/api";
+import { resolveAssetUrl } from "@/lib/composition/api";
+import { ApiRecipe } from "@/lib/composition/api";
 import { RECIPE_TAGS, MEAL_TYPES } from "../../../lib/recipeTags";
 
 export interface NewRecipeStep {

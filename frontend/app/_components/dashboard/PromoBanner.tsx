@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Loader2, Crown, Clock } from "lucide-react";
 import { useAuth } from "../../../lib/contexts/AuthContext";
-import { getMe } from "../../../lib/api/auth";
-import { requestProAccess } from "../../../lib/api/notification";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
-import { ApiRecipe } from "../../../lib/api/recipe";
+import { getMe } from "@/lib/composition/api";
+import { requestProAccess } from "@/lib/composition/api";
+import { resolveAssetUrl } from "@/lib/composition/api";
+import { ApiRecipe } from "@/lib/composition/api";
 
 interface PromoBannerProps {
   recipes: ApiRecipe[];

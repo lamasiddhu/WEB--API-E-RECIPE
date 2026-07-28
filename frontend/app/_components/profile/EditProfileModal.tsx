@@ -2,9 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { X, Camera } from "lucide-react";
-import { uploadFile } from "../../../lib/api/upload";
-import { updateMe } from "../../../lib/api/auth";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { uploadFile } from "@/lib/composition/api";
+import { updateMe } from "@/lib/composition/api";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 interface EditProfileModalProps {
   currentName: string;

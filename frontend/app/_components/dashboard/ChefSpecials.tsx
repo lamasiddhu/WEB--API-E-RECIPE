@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { Star, Clock, ChefHat, Loader2 } from "lucide-react";
-import { ApiRecipe } from "../../../lib/api/recipe";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { ApiRecipe } from "@/lib/composition/api";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 interface ChefSpecialsProps {
   recipes: ApiRecipe[];

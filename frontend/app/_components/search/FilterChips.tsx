@@ -8,9 +8,11 @@ const FILTERS = RECIPE_TAGS;
 interface FilterChipsProps {
   active: string | null;
   onSelect: (filter: string | null) => void;
+  onAllFilters: () => void;
+  hasAdvancedFilters: boolean;
 }
 
-export default function FilterChips({ active, onSelect }: FilterChipsProps) {
+export default function FilterChips({ active, onSelect, onAllFilters, hasAdvancedFilters }: FilterChipsProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {FILTERS.map((filter) => (
@@ -26,7 +28,14 @@ export default function FilterChips({ active, onSelect }: FilterChipsProps) {
           {filter}
         </button>
       ))}
-      <button className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-semibold text-[#B34B20] border border-[#B34B20]/30 hover:bg-orange-50 transition-colors">
+      <button
+        onClick={onAllFilters}
+        className={`flex items-center gap-1 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
+          hasAdvancedFilters
+            ? "bg-[#B34B20] text-white border-[#B34B20]"
+            : "text-[#B34B20] border-[#B34B20]/30 hover:bg-orange-50"
+        }`}
+      >
         <SlidersHorizontal className="w-4 h-4" /> All Filters
       </button>
     </div>

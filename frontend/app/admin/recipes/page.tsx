@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Search, Loader2 } from "lucide-react";
 import RecipeLibraryTable, { Recipe } from "../../_components/admin/RecipeLibraryTable";
 import AddRecipeModal, { NewRecipeInput } from "../../_components/admin/AddRecipeModal";
-import { getAllRecipes, getRecipeById, createRecipe, updateRecipe, deleteRecipe, ApiRecipe } from "../../../lib/api/recipe";
+import { getAllRecipesForAdmin, getRecipeById, createRecipe, updateRecipe, deleteRecipe, ApiRecipe } from "@/lib/composition/api";
 
 const toRecipe = (apiRecipe: ApiRecipe): Recipe => ({
   id: apiRecipe._id,
@@ -15,6 +15,7 @@ const toRecipe = (apiRecipe: ApiRecipe): Recipe => ({
   imageUrl: apiRecipe.imageUrl,
   price: apiRecipe.price || 0,
   badge: apiRecipe.badge,
+  approvalStatus: apiRecipe.approvalStatus,
 });
 
 export default function AdminRecipesPage() {
@@ -26,7 +27,7 @@ export default function AdminRecipesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getAllRecipes()
+    getAllRecipesForAdmin()
       .then((result) => setRecipes((result.data || []).map(toRecipe)))
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load recipes"))
       .finally(() => setIsLoading(false));

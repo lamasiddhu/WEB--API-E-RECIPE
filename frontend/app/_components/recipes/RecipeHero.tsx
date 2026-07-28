@@ -1,6 +1,6 @@
 "use client";
 
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 interface RecipeHeroProps {
   title: string;

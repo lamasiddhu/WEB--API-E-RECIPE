@@ -1,15 +1,8 @@
 import axios from "axios";
 import axiosInstance from "./axios-instance";
 import { API } from "./endpoint";
-
-export interface ApiShoppingListItem {
-    _id: string;
-    recipeId: string;
-    title: string;
-    imageUrl?: string;
-    price?: number;
-    quantity: number;
-}
+import { ShoppingListItem } from "../domain/entities";
+export type ApiShoppingListItem = ShoppingListItem;
 
 const extractErrorMessage = (error: unknown, fallback: string): string => {
     if (axios.isAxiosError(error)) {

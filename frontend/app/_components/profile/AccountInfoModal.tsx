@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { X, User, Mail, Phone } from "lucide-react";
-import { updateMe } from "../../../lib/api/auth";
+import { updateMe } from "@/lib/composition/api";
 
 interface AccountInfoModalProps {
   currentName: string;

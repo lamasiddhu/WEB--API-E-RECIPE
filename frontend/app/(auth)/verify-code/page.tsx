@@ -4,7 +4,7 @@ import { KeyboardEvent, Suspense, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Lock, HelpCircle } from "lucide-react";
-import { requestPasswordResetCode, verifyResetCode } from "../../../lib/api/auth";
+import { requestPasswordResetCode, verifyResetCode } from "@/lib/composition/api";
 
 const CODE_LENGTH = 6;
 

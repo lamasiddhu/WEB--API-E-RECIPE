@@ -1,6 +1,6 @@
 "use server";
 
-import { register, login } from "@/lib/api/auth"; // ✅ FIXED: correct path
+import { register, login } from "@/lib/composition/api"; // ✅ FIXED: correct path
 
 export const handleRegisterUser = async (data: any) => {
     try {

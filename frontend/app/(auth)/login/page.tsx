@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import Logo from "@/app/_components/Logo";
 import { handleLoginUser } from "@/lib/actions/auth-action";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { setSession } from "@/lib/session";
-import { loginWithGoogle } from "@/lib/api/auth";
+import { setSession } from "@/lib/composition/session";
+import { loginWithGoogle } from "@/lib/composition/api";
 import GoogleSignInButton from "@/app/_components/auth/GoogleSignInButton";
 
 export default function LoginPage() {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Trash2, Minus, Plus, Loader2 } from "lucide-react";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 export interface CartItemData {
   id: string;

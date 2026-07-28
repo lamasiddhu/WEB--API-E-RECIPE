@@ -10,12 +10,13 @@ import RecipeHero from "../../_components/recipes/RecipeHero";
 import NutritionStats from "../../_components/recipes/NutritionStats";
 import IngredientsList from "../../_components/recipes/IngredientsList";
 import CookingSteps from "../../_components/recipes/CookingSteps";
-import { getRecipeById, ApiRecipe } from "../../../lib/api/recipe";
+import ReviewSection from "../../_components/recipes/ReviewSection";
+import { getMe, getRecipeById, ApiRecipe } from "@/lib/composition/api";
 import { useAuth } from "../../../lib/contexts/AuthContext";
-import { requestProAccess } from "../../../lib/api/notification";
-import { addFavorite, removeFavorite } from "../../../lib/api/auth";
-import { addToShoppingList } from "../../../lib/api/shoppingList";
-import { canAccessRecipe, getRecipeTier } from "../../../lib/recipeAccess";
+import { requestProAccess } from "@/lib/composition/api";
+import { addFavorite, removeFavorite } from "@/lib/composition/api";
+import { addToShoppingList } from "@/lib/composition/api";
+import { canAccessRecipe, canPurchaseRecipe, canReviewRecipe, getRecipeTier } from "../../../lib/domain/recipeAccess";
 
 function getYoutubeEmbedUrl(url?: string): string | null {
   if (!url) return null;
@@ -23,9 +24,13 @@ function getYoutubeEmbedUrl(url?: string): string | null {
     const parsed = new URL(url);
     let videoId = "";
     if (parsed.hostname.includes("youtu.be")) {
-      videoId = parsed.pathname.slice(1);
+      videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
     } else if (parsed.hostname.includes("youtube.com")) {
       videoId = parsed.searchParams.get("v") || "";
+      if (!videoId) {
+        const segments = parsed.pathname.split("/").filter(Boolean);
+        if (["shorts", "embed", "live"].includes(segments[0])) videoId = segments[1] || "";
+      }
     }
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   } catch {
@@ -35,7 +40,7 @@ function getYoutubeEmbedUrl(url?: string): string | null {
 
 export default function RecipeDetailPage() {
   const params = useParams<{ id: string }>();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, loading: isAuthLoading, isAuthenticated } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [recipe, setRecipe] = useState<ApiRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,18 +53,27 @@ export default function RecipeDetailPage() {
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   useEffect(() => {
-    if (!params.id) return;
-    getRecipeById(params.id)
+    if (!params.id || isAuthLoading) return;
+    // Refresh entitlement state from the server before deciding whether the
+    // recipe is locked. Purchases and Pro approval may have happened after
+    // the user snapshot in local storage was created.
+    const refreshUser = isAuthenticated
+      ? getMe().then((result) => updateUser(result.data))
+      : Promise.resolve();
+    refreshUser
+      .then(() => getRecipeById(params.id))
       .then((result) => setRecipe(result.data))
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load recipe"))
       .finally(() => setIsLoading(false));
-  }, [params.id]);
+  }, [params.id, isAuthLoading, isAuthenticated, updateUser]);
 
   const tier = recipe ? getRecipeTier(recipe) : "free";
   const isProTier = tier === "pro";
   const isLocked = !!recipe && !canAccessRecipe(recipe, user);
+  const canBuyRecipe = !!recipe && canPurchaseRecipe(recipe, user);
   const canBuyProTier = user?.role === "admin" || !!user?.isPro;
   const isFavorited = !!recipe && !!user?.favoriteRecipeIds?.includes(recipe._id);
+  const canReview = !!recipe && canReviewRecipe(recipe, user);
 
   const handleAddToBasket = async () => {
     if (!recipe) return;
@@ -152,7 +166,7 @@ export default function RecipeDetailPage() {
                 <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-[#B34B20] transition-colors">
                   <Share2 className="w-5 h-5" />
                 </button>
-                {(!isProTier || canBuyProTier) && (
+                {canBuyRecipe && (
                   <button
                     onClick={handleAddToBasket}
                     disabled={isAddingToBasket || !recipe}
@@ -183,6 +197,7 @@ export default function RecipeDetailPage() {
                 </Link>
               </div>
             ) : (
+              <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <RecipeHero
@@ -212,7 +227,7 @@ export default function RecipeDetailPage() {
                       <div className="w-14 h-14 rounded-full bg-orange-50 text-[#B34B20] flex items-center justify-center mx-auto mb-4">
                         <Lock className="w-6 h-6" />
                       </div>
-                      {isProTier ? (
+                      {isProTier && !canBuyProTier ? (
                         <>
                           <h2 className="text-lg font-bold text-gray-900 mb-2">This is a Pro-only recipe</h2>
                           {user?.proRequestPending ? (
@@ -222,7 +237,7 @@ export default function RecipeDetailPage() {
                           ) : (
                             <>
                               <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
-                                This recipe can&apos;t be bought individually. You need Pro Access to view it.
+                                You need Pro Access before you can purchase this recipe.
                               </p>
                               <button
                                 onClick={handleRequestPro}
@@ -247,7 +262,9 @@ export default function RecipeDetailPage() {
                         <>
                           <h2 className="text-lg font-bold text-gray-900 mb-2">Buy this recipe to get access</h2>
                           <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
-                            Buy this recipe to get access to the ingredients and step-by-step instructions.
+                            {isProTier
+                              ? "Your Pro membership lets you purchase this dish. Buy it to unlock the ingredients, steps, and video."
+                              : "Buy this recipe to get access to the ingredients, steps, and video."}
                           </p>
                           <button
                             onClick={handleAddToBasket}
@@ -294,7 +311,9 @@ export default function RecipeDetailPage() {
                         <div className="absolute inset-0 flex items-center justify-center text-center px-4">
                           <p className="text-sm font-semibold text-gray-700 bg-white/90 rounded-lg px-3 py-1.5">
                             {isProTier
-                              ? "Pro Access required to view ingredients"
+                              ? canBuyProTier
+                                ? "Purchase required to view ingredients"
+                                : "Pro Access required before purchase"
                               : "Buy this recipe to get access to the ingredients"}
                           </p>
                         </div>
@@ -305,6 +324,8 @@ export default function RecipeDetailPage() {
                   )}
                 </div>
               </div>
+              <ReviewSection recipeId={recipe._id} canReview={canReview} />
+              </>
             )}
           </div>
         </main>

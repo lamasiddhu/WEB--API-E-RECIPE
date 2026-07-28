@@ -1,12 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { MEAL_TYPES, RECIPE_TAGS } from "../entities/recipe.entity";
 
 export interface IRecipeStep {
     title: string;
     description: string;
 }
-
-export const RECIPE_TAGS = ["Vegan", "Quick Meals", "Gluten-Free", "Low Carb", "Breakfast"] as const;
-export const MEAL_TYPES = ["Breakfast", "Lunch", "Dinner", "Snack"] as const;
 
 export interface IRecipe extends Document {
     title: string;
@@ -30,6 +28,7 @@ export interface IRecipe extends Document {
     // only ever sent to entitled viewers (see RecipeService.filterForViewer).
     videoUrl?: string;
     createdBy?: mongoose.Types.ObjectId;
+    approvalStatus: "pending" | "approved" | "rejected";
     createdAt: Date;
     updatedAt: Date;
 }
@@ -63,6 +62,12 @@ const RecipeSchema: Schema = new Schema<IRecipe>(
         tags: { type: [String], enum: RECIPE_TAGS, default: [] },
         videoUrl: { type: String },
         createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+        approvalStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "approved",
+            index: true,
+        },
     },
     { timestamps: true }
 );

@@ -1,11 +1,7 @@
 import axios from "axios";
 import axiosInstance from "../axios-instance";
 import { API } from "../endpoint";
-
-export interface AppSettings {
-    maintenanceMode: boolean;
-    cacheLastClearedAt?: string;
-}
+export type { AppSettings } from "../../domain/entities";
 
 const extractErrorMessage = (error: unknown, fallback: string): string => {
     if (axios.isAxiosError(error)) {

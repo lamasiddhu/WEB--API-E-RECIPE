@@ -15,6 +15,7 @@ import shoppingListRouter from "./routes/shoppingListItem.route";
 import notificationRouter from "./routes/notification.route";
 import appSettingsRouter from "./routes/admin/settings.route";
 import aiAssistantRouter from "./routes/aiAssistant.route";
+import reviewRouter from "./routes/review.route";
 
 const app: Application = express();
 
@@ -44,6 +45,7 @@ app.use("/api/v1/shopping-list", shoppingListRouter);
 app.use("/api/v1/notifications", notificationRouter);
 app.use("/api/v1/admin/settings", appSettingsRouter);
 app.use("/api/v1/ai", aiAssistantRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
 app.use((req: Request, res: Response) => {
   return res.status(404).json({ message: "Endpoint not found" });

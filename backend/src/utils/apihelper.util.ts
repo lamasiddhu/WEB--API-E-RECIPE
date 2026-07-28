@@ -12,6 +12,22 @@ const res = {
     }
 }
 import { Response } from "express";
+
+// Domain entities use the persistence-neutral name `version`. The public API
+// historically exposed MongoDB's `__v`, so presentation translates it here to
+// preserve the existing response contract without leaking Mongo terminology
+// into entities and use cases.
+function toHttpRepresentation(value: unknown): unknown {
+    if (Array.isArray(value)) return value.map(toHttpRepresentation);
+    if (value instanceof Date || value === null || typeof value !== "object") return value;
+
+    return Object.fromEntries(
+        Object.entries(value).map(([key, nested]) => [
+            key === "version" ? "__v" : key,
+            toHttpRepresentation(nested),
+        ])
+    );
+}
 export interface PaginationMeta{
     page: number;
     limit: number;
@@ -38,7 +54,7 @@ export class ApiResponseHelper {
             status,
             success: true,
             message,
-            data,
+            data: toHttpRepresentation(data) as T,
             meta
         }
         return res.status(status).json(response);

@@ -3,8 +3,8 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { Send, Loader2, Clock, Star } from "lucide-react";
-import { aiRecipeSearch, AiRecipeCard } from "../../../lib/api/aiAssistant";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { aiRecipeSearch, AiRecipeCard } from "@/lib/composition/api";
+import { resolveAssetUrl } from "@/lib/composition/api";
 
 interface ChatMessage {
   role: "user" | "assistant";

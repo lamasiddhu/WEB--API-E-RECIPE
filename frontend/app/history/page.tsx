@@ -6,7 +6,7 @@ import Sidebar from "../_components/dashboard/Sidebar";
 import TopBar from "../_components/dashboard/TopBar";
 import ThisWeekSection from "../_components/history/ThisWeekSection";
 import EarlierMonthList from "../_components/history/EarlierMonthList";
-import { getMyOrders, ApiOrder } from "../../lib/api/order";
+import { getMyOrders, ApiOrder } from "@/lib/composition/api";
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 

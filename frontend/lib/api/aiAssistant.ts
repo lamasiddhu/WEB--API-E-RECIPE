@@ -1,18 +1,8 @@
 import axios from "axios";
 import axiosInstance from "./axios-instance";
 import { API } from "./endpoint";
-
-export interface AiRecipeCard {
-    _id: string;
-    title: string;
-    imageUrl?: string;
-    badge?: string;
-    duration?: string;
-    difficulty?: string;
-    price?: number;
-    rating?: number;
-    category?: string;
-}
+import { AiRecipeCard } from "../domain/entities";
+export type { AiRecipeCard } from "../domain/entities";
 
 export interface AiSearchResult {
     message: string;

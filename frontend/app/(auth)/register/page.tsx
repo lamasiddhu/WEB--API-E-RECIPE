@@ -4,9 +4,9 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/app/_components/Logo";
-import { register, loginWithGoogle } from "@/lib/api/auth";
+import { register, loginWithGoogle } from "@/lib/composition/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { setSession } from "@/lib/session";
+import { setSession } from "@/lib/composition/session";
 import GoogleSignInButton from "@/app/_components/auth/GoogleSignInButton";
 
 export default function RegisterPage() {

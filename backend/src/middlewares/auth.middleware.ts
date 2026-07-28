@@ -1,20 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { SECRET_KEY } from '../configs/constant';
-import jwt from 'jsonwebtoken';
-import { IUser } from '../models/user.model';
-import { UserMongoRepository } from '../repositories/user.repository';
+import { User } from '../entities/user.entity';
 import { HttpException } from '../exceptions/http-exception';
 import { ApiResponseHelper } from '../utils/apihelper.util';
+import { tokenService, userRepository } from '../container';
 
 declare global {
     namespace Express {
         interface Request {
-            user?: Record<string, any> | IUser
+            user?: User
         }
     }
 } // adding tag (user) to request, can use req.user
-
-let userRepository = new UserMongoRepository();
 
 export const authorizedMiddleware =
     async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +21,7 @@ export const authorizedMiddleware =
             // JWT token should start with "Bearer <token>"
             const token = authHeader.split(' ')[1]; // 0 -> Bearer, 1 -> token
             if (!token) throw new HttpException(401, 'Unauthorized JWT missing');
-            const decodedToken = jwt.verify(token, SECRET_KEY) as Record<string, any>;
+            const decodedToken = tokenService.verify(token);
             if (!decodedToken || !decodedToken.id) {
                 throw new HttpException(401, 'Unauthorized JWT unverified');
             } // make function async
@@ -53,7 +49,7 @@ export const optionalAuthMiddleware =
             if (authHeader && authHeader.startsWith('Bearer ')) {
                 const token = authHeader.split(' ')[1];
                 if (token) {
-                    const decodedToken = jwt.verify(token, SECRET_KEY) as Record<string, any>;
+                    const decodedToken = tokenService.verify(token);
                     if (decodedToken && decodedToken.id) {
                         const user = await userRepository.getUserById(decodedToken.id);
                         if (user) req.user = user;

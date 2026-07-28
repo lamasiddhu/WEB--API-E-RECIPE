@@ -1,5 +1,7 @@
 import axios from "axios";
-import { getToken, clearSession } from "../session";
+import { BrowserSessionAdapter } from "../infrastructure/storage/browserSession.adapter";
+
+const session = new BrowserSessionAdapter();
 
 export const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
     || "http://localhost:8089";
@@ -22,7 +24,7 @@ const axiosInstance = axios.create({
 // Request Interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = getToken();
+        const token = session.token();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -37,7 +39,7 @@ axiosInstance.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             if (typeof window !== "undefined") {
-                clearSession();
+                session.clear();
                 window.location.href = "/login";
             }
         }

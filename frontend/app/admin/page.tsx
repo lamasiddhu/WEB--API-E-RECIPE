@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Users, DollarSign, Package } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { getAllUsers, AdminUser } from "../../lib/api/admin/user";
-import { getAllOrders, ApiOrder } from "../../lib/api/order";
+import { getAllUsers, AdminUser } from "@/lib/composition/api";
+import { getAllOrders, ApiOrder } from "@/lib/composition/api";
 
 interface MonthPoint {
   name: string;

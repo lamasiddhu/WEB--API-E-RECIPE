@@ -14,6 +14,8 @@ notificationRouter.patch("/read-all", notificationController.markAllRead);
 notificationRouter.delete("/clear-all", notificationController.clearAll);
 notificationRouter.patch("/:id/read", notificationController.markRead);
 notificationRouter.patch("/:id/respond", adminMiddleware, notificationController.respondToProRequest);
+notificationRouter.patch("/:id/respond-recipe", adminMiddleware, notificationController.respondToRecipeSubmission);
 notificationRouter.post("/announce", adminMiddleware, notificationController.broadcastAnnouncement);
+notificationRouter.post("/personal", adminMiddleware, notificationController.sendPersonalNotification);
 
 export default notificationRouter;

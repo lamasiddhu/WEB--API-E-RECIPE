@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, Trash2, Loader2, BookOpen } from "lucide-react";
-import { AdminUser } from "../../../lib/api/admin/user";
+import { AdminUser } from "@/lib/composition/api";
 
 interface PurchasedRecipeInfo {
   id: string;

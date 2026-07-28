@@ -3,18 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Filter, Menu, LogOut, User as UserIcon, Package, CheckCircle2, Megaphone, Crown, Check, X, Ban, PackageCheck, KeyRound } from "lucide-react";
+import { Bell, Filter, Menu, LogOut, User as UserIcon, Package, CheckCircle2, Megaphone, Crown, Check, X, Ban, PackageCheck, KeyRound, ChefHat } from "lucide-react";
 import { useAuth } from "../../../lib/contexts/AuthContext";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
-import { getAllOrders, ApiOrder } from "../../../lib/api/order";
+import { resolveAssetUrl } from "@/lib/composition/api";
+import { getAllOrders, ApiOrder } from "@/lib/composition/api";
 import {
   getMyNotifications,
   respondToProRequest,
+  respondToRecipeSubmission,
   markNotificationRead,
   markAllNotificationsRead,
   clearAllNotifications,
   ApiNotification,
-} from "../../../lib/api/notification";
+} from "@/lib/composition/api";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -61,10 +62,16 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
   // is still pending, and a genuinely new pending item lights it back up.
   const notificationsEnabled = user?.notificationPreferences?.push !== false;
   const pendingProRequests = notifications.filter((n) => n.type === "pro_request" && n.status === "pending");
+  const pendingRecipeRequests = notifications.filter((n) => n.type === "recipe_submission" && n.status === "pending");
   const otherNotifications = notificationsEnabled
-    ? notifications.filter((n) => !(n.type === "pro_request" && n.status === "pending"))
+    ? notifications.filter((n) =>
+        !((n.type === "pro_request" || n.type === "recipe_submission") && n.status === "pending")
+      )
     : [];
-  const hasUnread = pendingProRequests.some((n) => !n.isRead) || otherNotifications.some((n) => !n.isRead);
+  const hasUnread =
+    pendingProRequests.some((n) => !n.isRead) ||
+    pendingRecipeRequests.some((n) => !n.isRead) ||
+    otherNotifications.some((n) => !n.isRead);
 
   const handleRespond = async (id: string, action: "approve" | "reject") => {
     setRespondingId(id);
@@ -78,6 +85,18 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
     }
   };
 
+  const handleRecipeRespond = async (id: string, action: "approve" | "reject") => {
+    setRespondingId(id);
+    try {
+      await respondToRecipeSubmission(id, action);
+      loadNotifications();
+    } catch {
+      // Keep the request visible so the admin can retry.
+    } finally {
+      setRespondingId(null);
+    }
+  };
+
   const handleOpenNotification = (n: ApiNotification) => {
     if (!n.isRead) {
       setNotifications((prev) => prev.map((item) => (item._id === n._id ? { ...item, isRead: true } : item)));
@@ -86,6 +105,8 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
     setOpenMenu(null);
     if (n.type === "password_reset_requested") {
       router.push("/reset-password");
+    } else if (n.relatedRecipeId && n.type !== "recipe_rejected") {
+      router.push(`/recipes/${n.relatedRecipeId}`);
     }
   };
 
@@ -197,6 +218,35 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
                     </div>
                   )}
 
+                  {isAdmin && pendingRecipeRequests.length > 0 && (
+                    <div className="divide-y divide-gray-50 dark:divide-gray-800 border-b border-gray-100 dark:border-gray-800">
+                      {pendingRecipeRequests.map((n) => (
+                        <div key={n._id} className="p-4 flex items-start gap-3">
+                          {n.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={resolveAssetUrl(n.imageUrl)} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-orange-50 text-[#B34B20] flex items-center justify-center shrink-0">
+                              <ChefHat className="w-5 h-5" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-[#B34B20]">{n.senderName || "E-RECIPE"}</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{n.message}</p>
+                            <div className="flex gap-2 mt-2">
+                              <button onClick={() => handleRecipeRespond(n._id, "approve")} disabled={respondingId === n._id} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 disabled:opacity-60">
+                                <Check className="w-3 h-3" /> Accept recipe
+                              </button>
+                              <button onClick={() => handleRecipeRespond(n._id, "reject")} disabled={respondingId === n._id} className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-lg hover:bg-gray-200 disabled:opacity-60">
+                                <X className="w-3 h-3" /> Reject
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {isAdmin && pendingOrders.length > 0 && (
                     <div className="max-h-60 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800 border-b border-gray-100 dark:border-gray-800">
                       {pendingOrders.map((order) => (
@@ -228,7 +278,10 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
                             !n.isRead ? "bg-orange-50/40 dark:bg-orange-900/10" : ""
                           }`}
                         >
-                          <div
+                          {n.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={resolveAssetUrl(n.imageUrl)} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                          ) : <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                               n.type === "announcement"
                                 ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600"
@@ -252,8 +305,9 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
                             ) : (
                               <Crown className="w-4 h-4" />
                             )}
-                          </div>
+                          </div>}
                           <div className="min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#B34B20]">{n.senderName || "E-RECIPE"}</p>
                             <p className="text-sm font-semibold text-gray-900 dark:text-white">{n.title}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{n.message}</p>
                           </div>
@@ -265,7 +319,7 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
                       <Bell className="w-6 h-6 mx-auto mb-2 text-gray-300" />
                       Notifications are turned off. Enable them in Profile → Notifications.
                     </div>
-                  ) : !isAdmin || (pendingProRequests.length === 0 && pendingOrders.length === 0) ? (
+                  ) : !isAdmin || (pendingProRequests.length === 0 && pendingRecipeRequests.length === 0 && pendingOrders.length === 0) ? (
                     <div className="p-6 text-center text-gray-400 text-sm">
                       <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-green-500" />
                       You&apos;re all caught up.

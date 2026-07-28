@@ -2,9 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, UtensilsCrossed, ShoppingBasket, History, User, Users, LayoutGrid, Package, Settings, LogOut, BookOpen, Heart, BookMarked, Sparkles } from "lucide-react";
+import { LayoutDashboard, UtensilsCrossed, ShoppingBasket, History, User, Users, LayoutGrid, Package, Settings, LogOut, BookOpen, Heart, BookMarked, Sparkles, MessageSquare } from "lucide-react";
 import { useAuth } from "../../../lib/contexts/AuthContext";
-import { resolveAssetUrl } from "../../../lib/api/axios-instance";
+import { resolveAssetUrl } from "@/lib/composition/api";
 import AiAssistantPanel from "./AiAssistantPanel";
 
 const MENU_ITEMS = [
@@ -19,10 +19,11 @@ const MENU_ITEMS = [
   { name: "Recipe Library", icon: BookOpen, href: "/admin/recipes" },
   { name: "Users", icon: Users, href: "/admin/users" },
   { name: "Orders", icon: Package, href: "/admin/orders" },
+  { name: "Reviews", icon: MessageSquare, href: "/admin/reviews" },
   { name: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
-const ADMIN_ONLY_ITEMS = new Set(["Cockpit", "Recipe Library", "Users", "Orders", "Settings"]);
+const ADMIN_ONLY_ITEMS = new Set(["Cockpit", "Recipe Library", "Users", "Orders", "Reviews", "Settings"]);
 
 export default function Sidebar() {
   const pathname = usePathname();

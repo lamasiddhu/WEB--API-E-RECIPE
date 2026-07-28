@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { X, Lock, Eye, EyeOff, Globe, ShieldCheck } from "lucide-react";
-import { changeMyPassword, updateMe } from "../../../lib/api/auth";
+import { changeMyPassword, updateMe } from "@/lib/composition/api";
 
 interface SecurityPrivacyModalProps {
   currentIsProfilePublic?: boolean;

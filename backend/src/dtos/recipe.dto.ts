@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RECIPE_TAGS, MEAL_TYPES } from "../models/recipe.model";
+import { RECIPE_TAGS, MEAL_TYPES } from "../entities/recipe.entity";
 
 const RecipeStepDTO = z.object({
     title: z.string().min(1, "Step title is required"),

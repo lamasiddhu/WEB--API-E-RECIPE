@@ -4,19 +4,19 @@ import { IReview, ReviewModel } from "../models/review.model";
 import { IReviewRepository } from "../ports/repositories/review.repository.port";
 
 export class ReviewMongoRepository implements IReviewRepository {
+    // Reviews store their own snapshot of userName/userAvatarUrl at creation
+    // time, so rendering a review never actually depends on the author's
+    // account still existing — userId is only ever the raw stored reference,
+    // never populated, since a deleted user would otherwise turn this field
+    // into `null` and crash every field read off it.
     private toEntity(doc: IReview): Review {
-        const populatedUser = doc.userId as unknown as {
-            _id?: mongoose.Types.ObjectId;
-            avatarUrl?: string;
-            fullName?: string;
-        };
         return {
             _id: String(doc._id),
             recipeId: String(doc.recipeId),
             recipeTitle: doc.recipeTitle,
-            userId: String(populatedUser._id || doc.userId),
-            userName: doc.userName || populatedUser.fullName || "User",
-            userAvatarUrl: doc.userAvatarUrl || populatedUser.avatarUrl,
+            userId: String(doc.userId),
+            userName: doc.userName || "User",
+            userAvatarUrl: doc.userAvatarUrl,
             rating: doc.rating,
             comment: doc.comment,
             createdAt: doc.createdAt,
@@ -27,7 +27,7 @@ export class ReviewMongoRepository implements IReviewRepository {
 
     async findByRecipe(recipeId: string): Promise<Review[]> {
         if (!mongoose.isValidObjectId(recipeId)) return [];
-        return (await ReviewModel.find({ recipeId }).populate("userId", "fullName avatarUrl").sort({ createdAt: -1 }))
+        return (await ReviewModel.find({ recipeId }).sort({ createdAt: -1 }))
             .map((review) => this.toEntity(review));
     }
 
@@ -38,7 +38,7 @@ export class ReviewMongoRepository implements IReviewRepository {
     }
 
     async findAll(): Promise<Review[]> {
-        return (await ReviewModel.find().populate("userId", "fullName avatarUrl").sort({ createdAt: -1 }))
+        return (await ReviewModel.find().sort({ createdAt: -1 }))
             .map((review) => this.toEntity(review));
     }
 
